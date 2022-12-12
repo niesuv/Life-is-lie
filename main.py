@@ -135,29 +135,53 @@ class Game():
 			clock.tick(FPS)
 	
 	def show_bet(self):
-		self.race()
+		
+		#Load thumbnail
+		
+		
+		#Go back button
+		image = pygame.image.load("./asset/button/go_back_button.png")
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
+		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
+		betting  = True
+		while betting:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					pos = pygame.mouse.get_pos()
+					# Check click GO BaCK
+					if go_back_button.rect.collidepoint(pos):
+						betting = False
+					
+			self.show_back_ground()
+			# DRAW BUTTON
+			go_back_button.draw(display_surface)
+			pygame.display.update()
+			clock.tick(FPS)
 	
 	def show_map(self):
 		# SET BUTTON
-		image = pygame.image.load(f"./asset/map/showmap{self.map}.png")
+		image = pygame.image.load(f"./asset/map/showmap1.png")
 		image = pygame.transform.scale(image, (int(0.271 * WINDOW_WIDTH),int(0.271 * WINDOW_HEIGHT)))
 		images = [image,image,image,image,image,image]
-		buttons = []
+		self.map_thumbnail = []
 		#Chua te hard code
 		for i in range(6):
 			if i <= 2:
-				buttons.append(Button(int(i*(images[i].get_width() + 0.040 * WINDOW_WIDTH )
+				self.map_thumbnail.append(Button(int(i*(images[i].get_width() + 0.040 * WINDOW_WIDTH )
 				                          + 0.051 * WINDOW_WIDTH + images[i].get_width() / 2)  ,int(0.314 * WINDOW_HEIGHT)
 				                      ,images[i],1))
 			else:
-				buttons.append(Button(int((i-3)*(images[i].get_width() + 0.040 * WINDOW_WIDTH )
+				self.map_thumbnail.append(Button(int((i-3)*(images[i].get_width() + 0.040 * WINDOW_WIDTH )
 				                          + 0.051 * WINDOW_WIDTH + images[i].get_width() / 2),
 				                      int((0.314 +0.377) * WINDOW_HEIGHT ),images[i],1 ))
-		
+		# GO BACK BUTTON
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
 		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale),int(0.0688 * WINDOW_HEIGHT)))
-		#GO BACK BUTTON
 		go_back_button = Button(int(0.051*WINDOW_WIDTH + image.get_width() / 2), int(0.075*WINDOW_HEIGHT),image, 1)
 		mapping = True
 		while mapping:
@@ -169,7 +193,7 @@ class Game():
 					pos = pygame.mouse.get_pos()
 					#Check click Map
 					for i in range(6):
-						if buttons[i].rect.collidepoint(pos):
+						if self.map_thumbnail[i].rect.collidepoint(pos):
 							self.map = 1
 							self.show_set()
 					if go_back_button.rect.collidepoint(pos):
@@ -178,18 +202,33 @@ class Game():
 			self.show_back_ground()
 			#DRAW BUTTON
 			for i in range(6):
-				buttons[i].draw(display_surface)
+				self.map_thumbnail[i].draw(display_surface)
 				
 			go_back_button.draw(display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
 	def show_set(self):
+		#Lay ra anh thumbnail
+		image = pygame.image.load(f"./asset/set/set1/set_avt/all_set1.png")
+		image = pygame.transform.scale(image, (int(0.286 * WINDOW_HEIGHT), int(0.286 * WINDOW_HEIGHT)))
+		images = [image, image, image, image, image, image]
+		self.sets_thumbnail = []
+		# Chua te hard code
+		for i in range(5):
+			if i <= 2:
+				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + i * (0.16 + 0.146)*WINDOW_WIDTH)
+				                        ,int(0.317 * WINDOW_HEIGHT),images[i],1))
+			else:
+				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + (i-3) * (0.16 + 0.146) * WINDOW_WIDTH)
+				                       , int(0.7196 * WINDOW_HEIGHT), images[i], 1))
 		# Set button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
 		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
 		# GO BACK BUTTON
+		
+		
 		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
 		chosing_set = True
 		while chosing_set:
@@ -199,12 +238,18 @@ class Game():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					pos = pygame.mouse.get_pos()
-					# Check click Map
+					# Check click GO BaCK
 					if go_back_button.rect.collidepoint(pos):
 						chosing_set = False
-			
+					#Check chosing set
+					for i in range(5):
+						if self.sets_thumbnail[i].rect.collidepoint(pos):
+							self.set = 1
+							self.show_bet()
 			self.show_back_ground()
 			# DRAW BUTTON
+			for i in range(5):
+				self.sets_thumbnail[i].draw(display_surface)
 			go_back_button.draw(display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
