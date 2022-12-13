@@ -10,7 +10,7 @@ YELLOW = (255, 255, 0)
 RED = (255, 3, 3)
 
 # Create Display Surface(SCALE = 16 / 9)
-WINDOW_WIDTH = 1200
+WINDOW_WIDTH =  1200
 WINDOW_HEIGHT = 675
 
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -52,6 +52,7 @@ class Thumb_nail():
 			self.rect.center = self.pos_hover
 		else:
 			self.rect.center = self.pos_unhover
+
 
 class Game():
 	def __init__(self):
@@ -181,7 +182,7 @@ class Game():
 		#Load thumbnail
 		self.bet_thumbnail_images = []
 		for i in range(5):
-			image = pygame.image.load(f'./asset/set/set{self.set}/set_avt/{i+1}.png')
+			image = pygame.image.load(f'./asset/set/set_avt/1{i+1}.png')
 			scale = image.get_height() / image.get_width()
 			image = pygame.transform.scale(image, (int(0.1525 * WINDOW_WIDTH), int (0.1525 * WINDOW_WIDTH * scale)))
 			self.bet_thumbnail_images.append(image)
@@ -235,6 +236,8 @@ class Game():
 					if play_button.rect.collidepoint(pos):
 						if not error and have_click:
 							self.race()
+							
+						
 				if event.type == pygame.KEYDOWN:
 					if active:
 						if event.key == pygame.K_BACKSPACE:
@@ -276,20 +279,23 @@ class Game():
 			
 	def show_map(self):
 		# SET BUTTON
-		image = pygame.image.load(f"./asset/map/showmap1.png")
-		image = pygame.transform.scale(image, (int(0.271 * WINDOW_WIDTH),int(0.271 * WINDOW_HEIGHT)))
-		images = [image,image,image,image,image,image]
+		self.map_thumbnail_images = []
+		for i in range(1,7):
+			image = pygame.image.load(f"./asset/map/showmap{i}.png")
+			image = pygame.transform.scale(image, (int(0.271 * WINDOW_WIDTH),int(0.271 * WINDOW_HEIGHT)))
+			self.map_thumbnail_images.append(image)
+		
 		self.map_thumbnail = []
 		#Chua te hard code
 		for i in range(6):
 			if i <= 2:
-				self.map_thumbnail.append(Button(int(i*(images[i].get_width() + 0.040 * WINDOW_WIDTH )
-				                          + 0.051 * WINDOW_WIDTH + images[i].get_width() / 2)  ,int(0.314 * WINDOW_HEIGHT)
-				                      ,images[i],1))
+				self.map_thumbnail.append(Button(int(i*(self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH )
+				                          + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2)  ,int(0.314 * WINDOW_HEIGHT)
+				                      ,self.map_thumbnail_images[i],1))
 			else:
-				self.map_thumbnail.append(Button(int((i-3)*(images[i].get_width() + 0.040 * WINDOW_WIDTH )
-				                          + 0.051 * WINDOW_WIDTH + images[i].get_width() / 2),
-				                      int((0.314 +0.377) * WINDOW_HEIGHT ),images[i],1 ))
+				self.map_thumbnail.append(Button(int((i-3)*(self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH )
+				                          + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+				                      int((0.314 +0.377) * WINDOW_HEIGHT ),self.map_thumbnail_images[i],1 ))
 		# GO BACK BUTTON
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
@@ -306,7 +312,7 @@ class Game():
 					#Check click Map
 					for i in range(6):
 						if self.map_thumbnail[i].rect.collidepoint(pos):
-							self.map = 1
+							self.map = i+1
 							self.show_set()
 					if go_back_button.rect.collidepoint(pos):
 						mapping = False
@@ -322,7 +328,7 @@ class Game():
 	
 	def show_set(self):
 		#Lay ra anh thumbnail
-		image = pygame.image.load(f"./asset/set/set1/set_avt/all_set1.png")
+		image = pygame.image.load(f"./asset/set/set_avt/all_set1.png")
 		image = pygame.transform.scale(image, (int(0.286 * WINDOW_HEIGHT), int(0.286 * WINDOW_HEIGHT)))
 		images = [image, image, image, image, image]
 		self.sets_thumbnail = []
@@ -356,7 +362,7 @@ class Game():
 					#Check chosing set
 					for i in range(5):
 						if self.sets_thumbnail[i].rect.collidepoint(pos):
-							self.set = 1
+							self.set = i + 1
 							self.show_bet()
 			self.show_back_ground()
 			# DRAW BUTTON
