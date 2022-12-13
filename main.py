@@ -172,6 +172,11 @@ class Game():
 		
 		bet_text_rect.centery = 0.7 * WINDOW_HEIGHT + text_box.h / 2
 		
+		#Play button
+		image = pygame.image.load("./asset/button/play_now_button.png")
+		scale =image.get_height()/ image.get_width()
+		image = pygame.transform.scale(image, (int(0.33 * WINDOW_WIDTH), int(scale * 0.33 * WINDOW_WIDTH)))
+		play_button = Button(int(0.8*WINDOW_WIDTH),int(0.72 * WINDOW_HEIGHT),image, 1)
 		
 		#Load thumbnail
 		self.bet_thumbnail_images = []
@@ -193,8 +198,16 @@ class Game():
 		image = pygame.transform.scale(image,( int(0.0688 * WINDOW_HEIGHT * scale) ,int(0.0688 * WINDOW_HEIGHT) ))
 		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
 		
+		#User click the thumnail
+		have_click = False
 		betting  = True
 		while betting:
+			if have_click == False:
+				for i in range(5):
+					if self.bet_thumbnails[i].click:
+						have_click = True
+						break
+					
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
@@ -217,6 +230,11 @@ class Game():
 						active = True
 					else:
 						active = False
+						
+					#CHeck click play_now
+					if play_button.rect.collidepoint(pos):
+						if not error and have_click:
+							self.race()
 				if event.type == pygame.KEYDOWN:
 					if active:
 						if event.key == pygame.K_BACKSPACE:
@@ -233,6 +251,7 @@ class Game():
 				self.bet_thumbnails[i].draw(display_surface)
 			# DRAW BUTTON
 			go_back_button.draw(display_surface)
+			play_button.draw(display_surface)
 			
 			#CHECK COLORS OF THE BOX
 			if active:
