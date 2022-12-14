@@ -10,7 +10,7 @@ YELLOW = (255, 255, 0)
 RED = (255, 3, 3)
 
 # Create Display Surface(SCALE = 16 / 9)
-WINDOW_WIDTH =  1200
+WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 675
 
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -25,7 +25,7 @@ class Button():
 		self.rect.center = (x, y)
 		self.pos_unhover = (x, y)
 		self.pos_hover = (x, y - 3)
-		
+	
 	def draw(self, surface):
 		surface.blit(self.image, self.rect)
 		pos = pygame.mouse.get_pos()
@@ -34,17 +34,18 @@ class Button():
 		else:
 			self.rect.center = self.pos_unhover
 
+
 class Thumb_nail():
 	def __init__(self, x, y, image):
 		width = image.get_width()
 		height = image.get_height()
-		self.image = pygame.transform.scale(image,( width, height) )
+		self.image = pygame.transform.scale(image, (width, height))
 		self.rect = self.image.get_rect()
 		self.rect.topleft = (x, y)
 		self.pos_unhover = (x, y)
 		self.pos_hover = (x, y - 10)
 		self.click = False
-		
+	
 	def draw(self, surface):
 		surface.blit(self.image, self.rect)
 		pos = pygame.mouse.get_pos()
@@ -63,8 +64,8 @@ class Game():
 		scale = int(image.get_width() / image.get_height())
 		self.back_ground_image = pygame.transform.scale(image, (int(WINDOW_HEIGHT * scale), WINDOW_HEIGHT))
 		
-		#Font
-		self.font32 = pygame.font.Font("./asset/font/font1.ttf",32)
+		# Font
+		self.font32 = pygame.font.Font("./asset/font/font1.ttf", 32)
 		
 		# Game Value, SET in TEXT file
 		self.gold = 1000
@@ -92,7 +93,6 @@ class Game():
 		                      pygame.image.load("./asset/button/start_button.png"), 0.2)
 		setting_button = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3 + 130,
 		                        pygame.image.load("./asset/button/setting_button.png"), 0.2)
-		
 		
 		self.menu_music.stop()
 		self.menu_music.play(-1)
@@ -130,7 +130,7 @@ class Game():
 		self.show_map()
 	
 	def show_setting(self):
-		#Set button
+		# Set button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
 		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
@@ -155,60 +155,61 @@ class Game():
 			clock.tick(FPS)
 	
 	def show_bet(self):
-		#Load Text
+		# Load Text
 		gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
 		gold_text_rect = gold_text.get_rect()
-		gold_text_rect.topleft = ( 0.15*WINDOW_WIDTH,int(0.62 * WINDOW_HEIGHT))
+		gold_text_rect.topleft = (0.15 * WINDOW_WIDTH, int(0.62 * WINDOW_HEIGHT))
 		
 		user_text = ""
 		
 		bet_text = self.font32.render(f' BET: {user_text}', True, YELLOW)
 		bet_text_rect = bet_text.get_rect()
-		bet_text_rect.topleft = ( int(0.15*WINDOW_WIDTH),  int(0.7 * WINDOW_HEIGHT))
+		bet_text_rect.topleft = (int(0.15 * WINDOW_WIDTH), int(0.7 * WINDOW_HEIGHT))
 		
-		text_box = pygame.Rect(int(0.15*WINDOW_WIDTH) , int(0.7 * WINDOW_HEIGHT) , WINDOW_WIDTH //3 , WINDOW_HEIGHT//10 )
+		text_box = pygame.Rect(int(0.15 * WINDOW_WIDTH), int(0.7 * WINDOW_HEIGHT), WINDOW_WIDTH // 3,
+		                       WINDOW_HEIGHT // 10)
 		color = YELLOW
 		active = False
 		error = False
 		
 		bet_text_rect.centery = 0.7 * WINDOW_HEIGHT + text_box.h / 2
 		
-		#Play button
+		# Play button
 		image = pygame.image.load("./asset/button/play_now_button.png")
-		scale =image.get_height()/ image.get_width()
+		scale = image.get_height() / image.get_width()
 		image = pygame.transform.scale(image, (int(0.33 * WINDOW_WIDTH), int(scale * 0.33 * WINDOW_WIDTH)))
-		play_button = Button(int(0.8*WINDOW_WIDTH),int(0.72 * WINDOW_HEIGHT),image, 1)
+		play_button = Button(int(0.8 * WINDOW_WIDTH), int(0.72 * WINDOW_HEIGHT), image, 1)
 		
-		#Load thumbnail
+		# Load thumbnail
 		self.bet_thumbnail_images = []
 		for i in range(5):
-			image = pygame.image.load(f'./asset/set/set_avt/1{i+1}.png')
+			image = pygame.image.load(f'./asset/set/set_avt/1{i + 1}.png')
 			scale = image.get_height() / image.get_width()
-			image = pygame.transform.scale(image, (int(0.1525 * WINDOW_WIDTH), int (0.1525 * WINDOW_WIDTH * scale)))
+			image = pygame.transform.scale(image, (int(0.1525 * WINDOW_WIDTH), int(0.1525 * WINDOW_WIDTH * scale)))
 			self.bet_thumbnail_images.append(image)
 		
 		self.bet_thumbnails = []
 		for i in range(5):
-			thumbnail = Thumb_nail(int(( (0.15 + i*(0.1525 +0.063/2)) * WINDOW_WIDTH))
-			                       ,int(0.195*WINDOW_HEIGHT),self.bet_thumbnail_images[i])
+			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * WINDOW_WIDTH))
+			                       , int(0.195 * WINDOW_HEIGHT), self.bet_thumbnail_images[i])
 			self.bet_thumbnails.append(thumbnail)
 		
-		#Go back button
+		# Go back button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
-		image = pygame.transform.scale(image,( int(0.0688 * WINDOW_HEIGHT * scale) ,int(0.0688 * WINDOW_HEIGHT) ))
+		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
 		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
 		
-		#User click the thumnail
+		# User click the thumnail
 		have_click = False
-		betting  = True
+		betting = True
 		while betting:
 			if have_click == False:
 				for i in range(5):
 					if self.bet_thumbnails[i].click:
 						have_click = True
 						break
-					
+			
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
@@ -218,7 +219,7 @@ class Game():
 					# Check click GO BaCK
 					if go_back_button.rect.collidepoint(pos):
 						betting = False
-					#CHeck click thumbnail
+					# CHeck click thumbnail
 					for i in range(5):
 						if self.bet_thumbnails[i].rect.collidepoint(pos):
 							self.bet_thumbnails[i].click = True
@@ -226,37 +227,37 @@ class Game():
 								if j == i:
 									continue
 								self.bet_thumbnails[j].click = False
-					#Check Click Box
+					# Check Click Box
 					if text_box.collidepoint(pos):
 						active = True
 					else:
 						active = False
-						
-					#CHeck click play_now
+					
+					# CHeck click play_now
 					if play_button.rect.collidepoint(pos):
 						if not error and have_click:
 							self.race()
-							
-						
+				
 				if event.type == pygame.KEYDOWN:
 					if active:
 						if event.key == pygame.K_BACKSPACE:
-							user_text = user_text[0 : -1]
+							user_text = user_text[0: -1]
 						else:
 							if len(user_text) <= 12:
 								user_text += event.unicode
-								
-			#Check error
-			error = (len(user_text) >= 13) or (not user_text.isdigit()) or (int(user_text) <=0) or ( int(user_text) > self.gold)
+			
+			# Check error
+			error = (len(user_text) >= 13) or (not user_text.isdigit()) or (int(user_text) <= 0) or (
+					int(user_text) > self.gold)
 			self.show_back_ground()
-			#Draw character
+			# Draw character
 			for i in range(5):
 				self.bet_thumbnails[i].draw(display_surface)
 			# DRAW BUTTON
 			go_back_button.draw(display_surface)
 			play_button.draw(display_surface)
 			
-			#CHECK COLORS OF THE BOX
+			# CHECK COLORS OF THE BOX
 			if active:
 				if error:
 					color = RED
@@ -264,43 +265,43 @@ class Game():
 					color = GREEN
 			else:
 				color = YELLOW
-				
-			gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW) #Update HUD
-			bet_text = self.font32.render(f' BET: {user_text}', True, color) #Update HUD
+			
+			gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)  # Update HUD
+			bet_text = self.font32.render(f' BET: {user_text}', True, color)  # Update HUD
 			display_surface.blit(gold_text, gold_text_rect)
 			display_surface.blit(bet_text, bet_text_rect)
-			pygame.draw.rect(display_surface, color, text_box , 3 )
+			pygame.draw.rect(display_surface, color, text_box, 3)
 			
 			pygame.display.update()
 			clock.tick(FPS)
-			
-
-			
-			
+	
 	def show_map(self):
 		# SET BUTTON
 		self.map_thumbnail_images = []
-		for i in range(1,7):
+		for i in range(1, 7):
 			image = pygame.image.load(f"./asset/map/showmap{i}.png")
-			image = pygame.transform.scale(image, (int(0.271 * WINDOW_WIDTH),int(0.271 * WINDOW_HEIGHT)))
+			image = pygame.transform.scale(image, (int(0.271 * WINDOW_WIDTH), int(0.271 * WINDOW_HEIGHT)))
 			self.map_thumbnail_images.append(image)
 		
 		self.map_thumbnail = []
-		#Chua te hard code
+		# Chua te hard code
 		for i in range(6):
 			if i <= 2:
-				self.map_thumbnail.append(Button(int(i*(self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH )
-				                          + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2)  ,int(0.314 * WINDOW_HEIGHT)
-				                      ,self.map_thumbnail_images[i],1))
+				self.map_thumbnail.append(
+					Button(int(i * (self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH)
+					           + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+					       int(0.314 * WINDOW_HEIGHT)
+					       , self.map_thumbnail_images[i], 1))
 			else:
-				self.map_thumbnail.append(Button(int((i-3)*(self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH )
-				                          + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
-				                      int((0.314 +0.377) * WINDOW_HEIGHT ),self.map_thumbnail_images[i],1 ))
+				self.map_thumbnail.append(
+					Button(int((i - 3) * (self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH)
+					           + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+					       int((0.314 + 0.377) * WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
 		# GO BACK BUTTON
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
-		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale),int(0.0688 * WINDOW_HEIGHT)))
-		go_back_button = Button(int(0.051*WINDOW_WIDTH + image.get_width() / 2), int(0.075*WINDOW_HEIGHT),image, 1)
+		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
+		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
 		mapping = True
 		while mapping:
 			for event in pygame.event.get():
@@ -309,25 +310,25 @@ class Game():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					pos = pygame.mouse.get_pos()
-					#Check click Map
+					# Check click Map
 					for i in range(6):
 						if self.map_thumbnail[i].rect.collidepoint(pos):
-							self.map = i+1
+							self.map = i + 1
 							self.show_set()
 					if go_back_button.rect.collidepoint(pos):
 						mapping = False
-						
+			
 			self.show_back_ground()
-			#DRAW BUTTON
+			# DRAW BUTTON
 			for i in range(6):
 				self.map_thumbnail[i].draw(display_surface)
-				
+			
 			go_back_button.draw(display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
 	def show_set(self):
-		#Lay ra anh thumbnail
+		# Lay ra anh thumbnail
 		image = pygame.image.load(f"./asset/set/set_avt/all_set1.png")
 		image = pygame.transform.scale(image, (int(0.286 * WINDOW_HEIGHT), int(0.286 * WINDOW_HEIGHT)))
 		images = [image, image, image, image, image]
@@ -335,17 +336,16 @@ class Game():
 		# Chua te hard code
 		for i in range(5):
 			if i <= 2:
-				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + i * (0.16 + 0.146)*WINDOW_WIDTH)
-				                        ,int(0.317 * WINDOW_HEIGHT),images[i],1))
+				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + i * (0.16 + 0.146) * WINDOW_WIDTH)
+				                                  , int(0.317 * WINDOW_HEIGHT), images[i], 1))
 			else:
-				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + (i-3) * (0.16 + 0.146) * WINDOW_WIDTH)
-				                       , int(0.7196 * WINDOW_HEIGHT), images[i], 1))
+				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * WINDOW_WIDTH)
+				                                  , int(0.7196 * WINDOW_HEIGHT), images[i], 1))
 		# Set button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
 		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
 		# GO BACK BUTTON
-		
 		
 		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
 		chosing_set = True
@@ -359,7 +359,7 @@ class Game():
 					# Check click GO BaCK
 					if go_back_button.rect.collidepoint(pos):
 						chosing_set = False
-					#Check chosing set
+					# Check chosing set
 					for i in range(5):
 						if self.sets_thumbnail[i].rect.collidepoint(pos):
 							self.set = i + 1
@@ -371,7 +371,6 @@ class Game():
 			go_back_button.draw(display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
-		
 	
 	def show_victory(self):
 		pass
@@ -379,19 +378,33 @@ class Game():
 	def show_HUD(self):
 		pass
 	
-	
 	def race(self):
 		self.menu_music.stop()
 		racing = True
+		#Set 2 road continous
 		map = pygame.transform.scale(pygame.image.load(f"./asset/map/map{self.map}.png"), (WINDOW_WIDTH, WINDOW_HEIGHT))
+		map1 = map2 = map
+		map1_rect = map1.get_rect()
+		map1_rect.topleft = (0,0)
+		map2_rect = map2.get_rect()
+		map2_rect.topleft = map1_rect.topright
+		rect_check = pygame.Rect(0,0,10,100)
+		rect_check.topleft = map2_rect.topright
+		rect_check.width = 10
+		rect_check.height = WINDOW_HEIGHT
+		
+		#Set back map
 		backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 		scale = backmap.get_width() / backmap.get_height()
-		backmap = pygame.transform.scale(backmap,(WINDOW_HEIGHT * scale,WINDOW_HEIGHT))
+		backmap = pygame.transform.scale(backmap, (WINDOW_HEIGHT * scale, WINDOW_HEIGHT))
 		player_group = pygame.sprite.Group()
 		for i in range(1, 6):
 			player = Player(i, 0, WINDOW_HEIGHT * 0.263351 + (i - 1) * WINDOW_HEIGHT * 0.17407407407)
 			player_group.add(player)
-		scroll = 0
+		
+		scroll_map = 1
+		scroll_backmap = 0
+		scroll_map_bool = True
 		while racing:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -399,23 +412,41 @@ class Game():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					pos = pygame.mouse.get_pos()
-					
-			#Scroll the back_ground behide
-			scroll += 1
-			if scroll >= backmap.get_width():
-				scroll = 0
-			for i in range(3):
-				display_surface.blit(backmap,(i * backmap.get_width() - scroll, 0))
-				
-			#Blit the road
-			display_surface.blit(map, (0, 0))
+			#Check if the road get char
+			for player in player_group.sprites():
+				if player.rect.colliderect(rect_check):
+					player.get_race()
+					scroll_map = 0
+					scroll_map_bool = False
+					#if map dont scroll, plus speed for the char dont get race
+					for mem in player_group.sprites():
+						if mem.has_boost == False:
+							mem.speed += 1
+							mem.has_boost = True
+						
 			
-		
-			#Run the player
+			# Scroll the back_ground behide
+			if scroll_map_bool:
+				scroll_backmap += 1
+			if scroll_backmap >= backmap.get_width():
+				scroll_backmap = 0
+			for i in range(3):
+				display_surface.blit(backmap, (i * backmap.get_width() - scroll_backmap, 0))
+			
+			#Scroll the road
+			map1_rect.x -= scroll_map
+			map2_rect.x -= scroll_map
+			rect_check.topleft = map2_rect.topright
+			
+			# Blit the road
+			display_surface.blit(map1, map1_rect)
+			display_surface.blit(map2,map2_rect)
+			
+			# Run the player
 			player_group.update()
 			player_group.draw(display_surface)
 			
-			#Blit the HUD
+			# Blit the HUD
 			self.show_HUD()
 			
 			pygame.display.update()
@@ -426,13 +457,16 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self, index, x, y):
 		super().__init__()
 		self.index = index
-		self.speed = random.uniform(1,2)
+		self.speed = random.uniform(0.2, 0.5)
 		self.animate_fps = .3
+		self.running = True
+		self.has_boost = False
 		self.frame = []
 		for i in range(9):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
 			scale = image.get_width() / image.get_height()
-			self.frame.append(pygame.transform.scale(image, (int(WINDOW_HEIGHT*0.15*scale), int(WINDOW_HEIGHT*0.15))))
+			self.frame.append(
+				pygame.transform.scale(image, (int(WINDOW_HEIGHT * 0.15 * scale), int(WINDOW_HEIGHT * 0.15))))
 		
 		self.current_frame = 0
 		self.image = self.frame[self.current_frame]
@@ -441,18 +475,20 @@ class Player(pygame.sprite.Sprite):
 		self.positonx = x
 	
 	def update(self):
-		if self.rect.right <= WINDOW_WIDTH:
+		if self.running:
 			self.positonx += self.speed
 			self.rect.x = int(self.positonx)
 			self.animate(self.animate_fps)
+	
+	def get_race(self):
+		self.running = False
 	
 	def animate(self, fps):
 		self.current_frame += fps
 		if self.current_frame >= 8:
 			self.current_frame = 0
 		self.image = self.frame[int(self.current_frame)]
-	
-	
+
 
 pygame.init()
 my_game = Game()
