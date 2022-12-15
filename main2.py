@@ -53,12 +53,36 @@ class Thumb_nail():
 			self.rect.center = self.pos_hover
 		else:
 			self.rect.center = self.pos_unhover
+	
+# 1 Tang toc , 2 dich chuyen 3. tiep thang ve dich 4. Quay lui 5. CHay cham 6 di ve nha
+class Item_skill(pygame.sprite.Sprite):
+	def __init__(self, type, index, image, group, rect_check_left, player):
+		super().__init__()
+		self.index = index
+		self.type = type
+		self.image = image
+		self.item_group = group
+		self.rect = self.image.get_rect()
+		self.player = player
+		self.rect.topleft = player.rect.topright
+		distance = rect_check_left - player.rect.right
+		if distance > self.image.get_width():
+			self.rect.x += random.randint(min(100, int(distance - self.image.get_width())),min(500, int(distance - self.image.get_width())) )
+	
+	def update(self):
+		self.rect.x -= 2
+		if pygame.sprite.collide_rect(self,self.player):
+			self.remove(self.item_group)
+			my_game.collect_sound.play()
+			
 
 
 class Game():
 	def __init__(self):
 		self.scroll = 0
 		self.direction_scroll = 1
+		self.time = 0
+		self.frame_count = 0
 		# Get BACKGROUND
 		image = pygame.image.load("./asset/image/back.webp").convert()
 		scale = int(image.get_width() / image.get_height())
@@ -66,6 +90,20 @@ class Game():
 		
 		# Font
 		self.font32 = pygame.font.Font("./asset/font/font1.ttf", 32)
+		
+		#sound
+		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.mp3")
+		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
+		
+		
+		# Item image
+		self.item_image = []
+		for i in range(6):
+			image = pygame.image.load(f"./asset/skill/{i + 1}.png")
+			scale = image.get_width() / image.get_height()
+			self.item_image.append(
+				pygame.transform.scale(image, (int(scale * WINDOW_HEIGHT * 0.15), int(WINDOW_HEIGHT * 0.15))))
+		
 		
 		# Game Value, SET in TEXT file
 		self.gold = 1000
@@ -378,55 +416,111 @@ class Game():
 	def show_HUD(self):
 		pass
 	
+	def count_down(self):
+		num3_image = pygame.transform.scale(pygame.image.load("./asset/image/num3.png"),(WINDOW_WIDTH//2, WINDOW_WIDTH//2))
+		num2_image = pygame.transform.scale(pygame.image.load("./asset/image/num2.png"),(WINDOW_WIDTH//2, WINDOW_WIDTH//2))
+		num1_image = pygame.transform.scale(pygame.image.load("./asset/image/num1.png"),(WINDOW_WIDTH//2, WINDOW_WIDTH//2))
+		rect = num3_image.get_rect()
+		rect.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT //2)
+		
+		music = pygame.mixer.Sound("./asset/music/count_down_music.mp3")
+		
+		frame_count = 0
+		time = 3
+		music.play()
+		while True:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+			frame_count += 1
+			if frame_count == FPS / 10:
+				frame_count = 0
+				time -= 0.1
+			display_surface.fill(BLACK)
+			if time > 2:
+				display_surface.blit(num3_image, rect)
+			if time <= 2 and time > 1:
+				display_surface.blit(num2_image, rect)
+			if time <= 1 and time > 0:
+				display_surface.blit(num1_image, rect)
+			if time <= 0:
+				break
+			clock.tick(FPS)
+			pygame.display.update()
+
 	def race(self):
 		self.menu_music.stop()
+		self.map_length = 4
 		racing = True
-		#Set 2 road continous
+		#Set n road continous
 		map = pygame.transform.scale(pygame.image.load(f"./asset/map/map{self.map}.png"), (WINDOW_WIDTH, WINDOW_HEIGHT))
-		map1 = map2 = map
-		map1_rect = map1.get_rect()
-		map1_rect.topleft = (0,0)
-		map2_rect = map2.get_rect()
-		map2_rect.topleft = map1_rect.topright
-		rect_check = pygame.Rect(0,0,10,100)
-		rect_check.topleft = map2_rect.topright
-		rect_check.width = 10
-		rect_check.height = WINDOW_HEIGHT
+		self.map_rects = []
+		for i in range(self.map_length):
+			rect = map.get_rect()
+			if i > 0:
+				rect.topleft = self.map_rects[i-1].topright
+			else:
+				rect.topleft = (0, 0)
+			self.map_rects.append(rect)
+		
+		#rect for check player get the race
+		self.rect_check = pygame.Rect(0,0,10,WINDOW_HEIGHT)
+		self.rect_check.topleft = self.map_rects[self.map_length -1].topright
+
 		
 		#Set back map
 		backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 		scale = backmap.get_width() / backmap.get_height()
 		backmap = pygame.transform.scale(backmap, (WINDOW_HEIGHT * scale, WINDOW_HEIGHT))
-		player_group = pygame.sprite.Group()
-		for i in range(1, 6):
-			player = Player(i, 0, WINDOW_HEIGHT * 0.263351 + (i - 1) * WINDOW_HEIGHT * 0.17407407407)
-			player_group.add(player)
+		self.player_group = pygame.sprite.Group()
 		
-		scroll_map = 1
+		#Item
+		item_group = pygame.sprite.Group()
+
+		#Add Character
+		for i in range(1, 6):
+			player = Player(i, 0, WINDOW_HEIGHT * 0.263 + (i - 1) * WINDOW_HEIGHT * 0.174,self.player_group)
+			self.player_group.add(player)
+		
+		
+		#scroll variables
+		self.scroll_map = 2
 		scroll_backmap = 0
-		scroll_map_bool = True
+		self.scroll_map_bool = True
+		
+		#count down
+		self.count_down()
+		self.race_music.play()
+		#Main loop
 		while racing:
+			if random.randint(0,1000) >= 995:
+				if len(item_group.sprites() ) < 20:
+					type = random.randint(1,6)
+					index = random.randint(1,5)
+					for player in self.player_group.sprites():
+						if player.index == index:
+							if player.running == False:
+								break
+							else:
+								item = Item_skill(type,index,self.item_image[type -1],item_group,self.rect_check.left,player)
+								item_group.add(item)
+			
+			
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					pos = pygame.mouse.get_pos()
-			#Check if the road get char
-			for player in player_group.sprites():
-				if player.rect.colliderect(rect_check):
-					player.get_race()
-					scroll_map = 0
-					scroll_map_bool = False
-					#if map dont scroll, plus speed for the char dont get race
-					for mem in player_group.sprites():
-						if mem.has_boost == False:
-							mem.speed += 1
-							mem.has_boost = True
-						
+			#time getting
+			self.frame_count+= 1
+			if self.frame_count == FPS:
+				self.time += 1
+			print(self.time)
 			
 			# Scroll the back_ground behide
-			if scroll_map_bool:
+			if self.scroll_map_bool:
 				scroll_backmap += 1
 			if scroll_backmap >= backmap.get_width():
 				scroll_backmap = 0
@@ -434,17 +528,22 @@ class Game():
 				display_surface.blit(backmap, (i * backmap.get_width() - scroll_backmap, 0))
 			
 			#Scroll the road
-			map1_rect.x -= scroll_map
-			map2_rect.x -= scroll_map
-			rect_check.topleft = map2_rect.topright
-			
+			self.map_rects[0].x -= self.scroll_map
+			for i in range(1, self.map_length):
+				self.map_rects[i].topleft = self.map_rects[i-1].topright
+			self.rect_check.topleft = self.map_rects[self.map_length-1].topright
 			# Blit the road
-			display_surface.blit(map1, map1_rect)
-			display_surface.blit(map2,map2_rect)
+			for i in range(self.map_length):
+				display_surface.blit(map, self.map_rects[i])
 			
 			# Run the player
-			player_group.update()
-			player_group.draw(display_surface)
+			self.player_group.update()
+			self.player_group.draw(display_surface)
+			
+			
+			#BLit the item
+			item_group.update()
+			item_group.draw(display_surface)
 			
 			# Blit the HUD
 			self.show_HUD()
@@ -454,13 +553,14 @@ class Game():
 
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self, index, x, y):
+	def __init__(self, index, x, y, group):
 		super().__init__()
 		self.index = index
-		self.speed = random.uniform(0.2, 0.5)
+		self.speed = random.uniform(.3,.5)
 		self.animate_fps = .3
 		self.running = True
 		self.has_boost = False
+		self.group = group
 		self.frame = []
 		for i in range(9):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
@@ -472,23 +572,45 @@ class Player(pygame.sprite.Sprite):
 		self.image = self.frame[self.current_frame]
 		self.rect = self.image.get_rect()
 		self.rect.bottomleft = (x, y)
-		self.positonx = x
+		self.positionx = x
 	
 	def update(self):
 		if self.running:
-			self.positonx += self.speed
-			self.rect.x = int(self.positonx)
+			self.positionx += self.speed
+			self.rect.x = int(self.positionx)
 			self.animate(self.animate_fps)
-	
+		if self.rect.colliderect(my_game.rect_check):
+			self.get_race()
+			my_game.scroll_map = 0
+			my_game.scroll_map_bool = False
+			
+		if self.rect.right >= WINDOW_WIDTH:
+			for player in self.group.sprites():
+				player.positionx -= WINDOW_WIDTH
+			my_game.map_rects[0].left -= WINDOW_WIDTH
+			for i in range(1,my_game.map_length - 1):
+				my_game.map_rects[i].left = my_game.map_rects[i-1].right
+			my_game.rect_check.left = my_game.map_rects[my_game.map_length - 1].right
+
 	def get_race(self):
 		self.running = False
+		for player in self.group.sprites():
+			if player == self :
+				continue
+			if not player.has_boost:
+				player.speed += 2
+				player.has_boost = True
 	
 	def animate(self, fps):
 		self.current_frame += fps
 		if self.current_frame >= 8:
 			self.current_frame = 0
 		self.image = self.frame[int(self.current_frame)]
+	
 
+
+			
+		
 
 pygame.init()
 my_game = Game()
