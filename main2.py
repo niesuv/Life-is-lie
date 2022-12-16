@@ -84,12 +84,11 @@ class Item_skill(pygame.sprite.Sprite):
 			elif self.type == 2:
 				self.player.slow_down_time += FPS  #three seconds
 			elif self.type == 3:
-				self.player.positionx += 300 #tele300 pixel
+				self.player.positionx += 150 #tele300 pixel
 			elif self.type == 4:
 				self.player.reverse_time += FPS
 			elif self.type == 5:
 				self.player.rect.right = my_game.map_rects[my_game.map_length - 1].right
-				print('cak')
 				self.player.win_absolute = True
 			elif self.type == 6:
 				self.player.positionx = my_game.map_rects[0].left
@@ -135,6 +134,9 @@ class Game():
 		self.history = []
 	
 	def main(self):
+		# Music
+		self.menu_music = pygame.mixer.Sound("./asset/music/menu_music.mp3")
+		self.menu_music.set_volume(.2)
 		running = True
 		while running:
 			# Check close
@@ -145,9 +147,7 @@ class Game():
 			clock.tick(FPS)
 	
 	def show_main_menu(self):
-		# Music
-		self.menu_music = pygame.mixer.Sound("./asset/music/menu_music.mp3")
-		self.menu_music.set_volume(.2)
+		
 		# Button menu
 		start_button = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3,
 		                      pygame.image.load("./asset/button/start_button.png"), 0.2)
@@ -296,6 +296,11 @@ class Game():
 					# CHeck click play_now
 					if play_button.rect.collidepoint(pos):
 						if not error and have_click:
+							for i in range(5):
+								if self.bet_thumbnails[i].click == True:
+									self.bet = i + 1
+									break
+							self.bet_money = int(user_text)
 							self.race()
 				
 				if event.type == pygame.KEYDOWN:
@@ -435,7 +440,87 @@ class Game():
 			clock.tick(FPS)
 	
 	def show_victory(self):
-		pass
+		self.race_music.stop()
+		show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.mp3")
+		show_vic_music.play(-1)
+		image = pygame.image.load("./asset/image/show_vic.png")
+		self.victory_image = pygame.transform.scale(image, (WINDOW_WIDTH,WINDOW_HEIGHT))
+		
+		image = pygame.image.load("./asset/button/play_now_button.png")
+		scale = image.get_height() / image.get_width()
+		image = pygame.transform.scale(image, (int(0.15 * WINDOW_WIDTH), int(scale * 0.15 * WINDOW_WIDTH)))
+		play_button = Button(int(0.8 * WINDOW_WIDTH), int(0.72 * WINDOW_HEIGHT), image, 1)
+		play_button.rect.bottomright = (WINDOW_WIDTH - 10, WINDOW_HEIGHT - 10)
+		
+		player = self.rank[0]
+		scale = player.image.get_height() / player.image.get_width()
+		for image in player.frame:
+			image = pygame.transform.scale(image, (int(0.25 * WINDOW_HEIGHT), int(0.25 * WINDOW_HEIGHT * scale)))
+		player.rect = player.image.get_rect()
+		player.rect.bottom = 0.66 * WINDOW_HEIGHT
+		player.rect.centerx = 0.5 * WINDOW_WIDTH
+
+		
+		player = self.rank[1]
+		for image in player.frame:
+			image = pygame.transform.scale(image, (int(0.2 * WINDOW_HEIGHT), int(0.2 * WINDOW_HEIGHT * scale)))
+		player.rect = player.image.get_rect()
+		player.rect.bottom = 0.62 * WINDOW_HEIGHT
+		player.rect.centerx = 0.3 * WINDOW_WIDTH
+
+		
+		player = self.rank[2]
+		for image in player.frame:
+			image = pygame.transform.scale(image, (int(0.2 * WINDOW_HEIGHT), int(0.2 * WINDOW_HEIGHT * scale)))
+		player.rect = player.image.get_rect()
+		player.rect.bottom = 0.62 * WINDOW_HEIGHT
+		player.rect.centerx = 0.67 * WINDOW_WIDTH
+
+		
+		player = self.rank[3]
+		for image in player.frame:
+			image = pygame.transform.scale(image, (int(0.14 * WINDOW_HEIGHT), int(0.14 * WINDOW_HEIGHT * scale)))
+		player.rect = player.image.get_rect()
+		player.rect.bottom = 0.5 * WINDOW_HEIGHT
+		player.rect.centerx = 0.82 * WINDOW_WIDTH
+
+		
+		player = self.rank[4]
+		for image in player.frame:
+			image = pygame.transform.scale(image, (int(0.14 * WINDOW_HEIGHT), int(0.14 * WINDOW_HEIGHT * scale)))
+		player.rect = player.image.get_rect()
+		player.rect.bottom = 0.5 * WINDOW_HEIGHT
+		player.rect.centerx = 0.15 * WINDOW_WIDTH
+		
+		#cong tien
+		if self.bet == self.rank[0].index:
+			self.gold += self.bet_money
+		else:
+			self.gold -= self.bet_money
+		
+		showing = True
+		while showing:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					pos = pygame.mouse.get_pos()
+					
+					#Click play again
+					if play_button.rect.collidepoint(pos):
+						show_vic_music.stop()
+						self.rank = []
+						self.show_main_menu()
+						
+			display_surface.blit(self.victory_image,(0,0))
+			play_button.draw(display_surface)
+			for player in self.rank:
+				player.animate(.2)
+			self.player_group.draw(display_surface)
+			# DRAW BUTTON
+			pygame.display.update()
+			clock.tick(FPS)
 	
 	def show_HUD(self):
 		pass
@@ -474,6 +559,7 @@ class Game():
 			pygame.display.update()
 
 	def race(self):
+		print(len(self.rank))
 		self.menu_music.stop()
 		self.map_length = 3
 		racing = True
@@ -517,6 +603,9 @@ class Game():
 		
 		#Main loop
 		while racing:
+			#if all player get the race, show victory
+			if len(self.rank) == 5:
+				self.show_victory()
 			# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
 			if random.randint(0,1000) >= 993:
 				type = random.choices([1,2,3,4,5,6], weights=[0.3, 0.3, .05 , 0.3, .001, .001])[0]
@@ -632,7 +721,8 @@ class Player(pygame.sprite.Sprite):
 		
 		if self.rect.right >= my_game.map_rects[my_game.map_length-1].right:
 			self.rect.right = my_game.map_rects[my_game.map_length-1].right
-			self.get_race()
+			if self not in my_game.rank:
+				self.get_race()
 			
 		if self.win_absolute and my_game.scroll_map_bool:
 			self.rect.x -= my_game.scroll_map
@@ -641,7 +731,7 @@ class Player(pygame.sprite.Sprite):
 			self.positionx += self.speed
 			self.rect.x = int(self.positionx)
 			self.animate(self.animate_fps)
-			
+		
 		'''if self.rect.right >= WINDOW_WIDTH:
 			for player in self.group.sprites():
 				player.positionx -= WINDOW_WIDTH - self.image.get_width()
@@ -650,11 +740,13 @@ class Player(pygame.sprite.Sprite):
 				my_game.map_rects[i].left = my_game.map_rects[i-1].right'''
 		
 	def get_race(self):
+		#win absolute la dich chuyen thang ve dich, nen khong can ngung man hinh - > may con kia chay bthg
 		if not self.win_absolute:
 			self.running = False
 			my_game.rank.append(self)
-			my_game.scroll_map = 0
-			my_game.scroll_map_bool = False
+			if my_game.map_rects[my_game.map_length-1].right <= WINDOW_WIDTH:
+				my_game.scroll_map = 0
+				my_game.scroll_map_bool = False
 			for player in self.group.sprites():
 				if player == self :
 					continue
