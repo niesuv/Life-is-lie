@@ -1,4 +1,5 @@
-import pygame, random, sys, re
+﻿import pygame, random, sys, re
+import numpy as np
 
 # FPS and clock
 FPS = 60
@@ -8,6 +9,7 @@ GREEN = (13, 255, 0)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
 RED = (255, 3, 3)
+GRAY = (80, 80, 80)
 
 # Create Display Surface(SCALE = 16 / 9)
 WINDOW_WIDTH = 1200
@@ -112,7 +114,7 @@ class Game():
 		self.font32 = pygame.font.Font("./asset/font/font1.ttf", 32)
 		
 		#sound
-		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.mp3")
+		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
 		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
 		
 		
@@ -132,6 +134,9 @@ class Game():
 		self.bet = 1
 		self.rank = []
 		self.history = []
+		self.show_text_chat = u""
+		self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", 19)
+		self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", 17)
 	
 	def main(self):
 		# Music
@@ -214,6 +219,60 @@ class Game():
 			pygame.display.update()
 			clock.tick(FPS)
 	
+	def preprocess_data(self, comments):
+
+		# get rid of "train"
+		comments = comments.replace("train", " ")
+		# Lower case
+		comments = comments.lower()
+		# Look for one or more characters between 0-9
+		comments = re.compile('[0-9]+').sub(' ', comments)
+		# Look for strings starting with http:// or https://
+		comments = re.compile('(http|https)://[^\s]*').sub(' ', comments)
+		# Look for strings with @ in the middle
+		comments = re.compile('[^\s]+@[^\s]+').sub(' ', comments)
+		# Handle $ sign
+		comments = re.compile('[$]+').sub(' ', comments)
+		# get rid of repeat letters
+		temp = " "
+		for letter in comments:
+			if (letter != temp[-1]):
+				temp += letter
+		comments = temp
+		# get rid of any punctuation
+		comments = re.split('[ #%^&*@$/#.-:&*+=\[\]?!(){},\'">_<;%\n\r\t\|]', comments)
+		# remove any empty word string
+		comments = [word for word in comments if len(word) > 0]
+
+		return comments
+
+	def sigmoid(self, z):
+		return(1 / (1 + np.exp(-z)))
+
+	def AI_evaluate(self, comments):
+		#Load vocabList and theta
+		vocabList = open("./asset/AI/vocabulary.txt",  encoding="utf8")
+		vocabList = str(vocabList.read()).split("\n")
+		theta = np.loadtxt('./asset/AI/optimizedTheta.txt')
+
+		#Digitize data
+		n = len(vocabList)  #numbers of features 
+		word_indices = [0 for i in range(n)]
+		comments = self.preprocess_data(comments)
+
+		for i in range(n):
+			if vocabList[i] in comments:
+				word_indices[i] += 1
+
+		#Output 
+		#print(self.sigmoid(np.array(word_indices) @ theta.T))
+		if len(comments) == 0:
+			print(u"\nBạn muốn nói gì sao?\n")
+		elif (self.sigmoid(np.array(word_indices) @ theta.T)) >= (0.5 + 10e-6) or ("chó" in comments) or ("lỗi" in comments):
+			print(u"\nBạn hẳn đã có một ngày không tốt!\nHãy để Silly Squad giúp bạn nhé!\n")
+		else:
+			print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
+
 	def show_bet(self):
 		# Load Text
 		gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
@@ -441,7 +500,7 @@ class Game():
 	
 	def show_victory(self):
 		self.race_music.stop()
-		show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.mp3")
+		show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
 		show_vic_music.play(-1)
 		image = pygame.image.load("./asset/image/show_vic.png")
 		self.victory_image = pygame.transform.scale(image, (WINDOW_WIDTH,WINDOW_HEIGHT))
@@ -509,6 +568,7 @@ class Game():
 					
 					#Click play again
 					if play_button.rect.collidepoint(pos):
+						self.AI_evaluate(self.user_text)
 						show_vic_music.stop()
 						self.rank = []
 						self.show_main_menu()
@@ -558,11 +618,68 @@ class Game():
 			clock.tick(FPS)
 			pygame.display.update()
 
+	def blit_text(self, surface, text, pos, font, color=pygame.Color('black')):
+		words = [word.split(' ') for word in text.splitlines()]  # 2D array where each row is a list of words.
+		space = font.size(' ')[0]  # The width of a space.
+		max_width, max_height = surface.get_size()
+		x, y = pos
+		for line in words:
+			for word in line:
+				word_surface = font.render(word, 0, color)
+				word_width, word_height = word_surface.get_size()
+				if x + word_width >= max_width:
+					x = pos[0]  # Reset the x.
+					y += word_height  # Start on new row.
+				surface.blit(word_surface, (x, y))
+				x += word_width + space
+			x = pos[0]  # Reset the x.
+			y += word_height  # Start on new row.
+
+	def show_chat(self, *comments):
+		if str(comments) == "('',)": #đưa vào chuỗi rỗng
+			self.blit_text(display_surface, self.show_text_chat,(int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) , self.font17)
+			return 0
+		elif len(comments) > 0:
+			self.show_text_chat +=  "User_name: " + str(comments)[2:-3] + "\n"  #self.user_name + str(comments)[2:-3] + "\n"
+		else:
+			temp = random.randint(1, 15)
+			switcher={
+			1:'Chỉ cần bạn có mặt, thắng thua không quan trọng',
+			2:'@@',
+			3:'Xin lỗi tôi mệt rồi',
+			4:'Thanks',
+			5:'Bạn chơi hay quá! Đúng là bạn thân của tớ',
+			6:'Chỉ cần bạn có mặt, thắng thua không quan trọng',
+			7:'Ước được thua',
+			8:'Thôi gg đi',
+			9:'kkk',
+			10:'Thua đi nhá',
+			11:'0949365JKL kb zalo t đón',
+			12:'Ping cao quá',
+			13:'Tao troll thôi',
+			14:'Chỉ cần bạn có mặt, thắng thua không quan trọng',
+			15:'Hello bạn!',
+			}
+			self.show_text_chat += "Chat Bot " + str(random.randint(1, 4)) + ": " +switcher.get(temp) + "\n"
+		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) 
+		text_box_rect = text_box.get_rect()
+		text_box_rect.topleft = (int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) 
+		text_box_rect.centery = 0.05 * WINDOW_HEIGHT 
+
+		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) #update HUD
+
+		self.blit_text(display_surface, self.show_text_chat,(int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) , self.font17)
+
 	def race(self):
-		print(len(self.rank))
 		self.menu_music.stop()
 		self.map_length = 3
 		racing = True
+		active = False
+		user_text = u""
+		user_text_temp = u""
+		self.user_text = u""
+		temp = 0
+		box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png"), ( int(WINDOW_WIDTH*0.3), int(WINDOW_HEIGHT*0.15) ) )
 		#Set n road continous
 		map = pygame.transform.scale(pygame.image.load(f"./asset/map/map{self.map}.png"), (WINDOW_WIDTH, WINDOW_HEIGHT))
 		self.map_rects = []
@@ -624,6 +741,26 @@ class Game():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					pos = pygame.mouse.get_pos()
+					#Check Click Box chat
+					if text_chat_rect.collidepoint(pos):
+						active = True
+					else:
+						active = False					
+				if event.type == pygame.KEYDOWN:
+					if active:
+						if event.key == pygame.K_BACKSPACE:
+							user_text = user_text[: -1]
+							if event.unicode.isalpha():
+								user_text += event.unicode
+							continue
+
+						if len(user_text) <= 100:
+							user_text += event.unicode
+
+						if  event.key == pygame.K_RETURN:
+							user_text_temp = user_text
+							user_text = u""
+
 			#time getting
 			self.frame_count+= 1
 			if self.frame_count == FPS:
@@ -632,6 +769,37 @@ class Game():
 			#Show Back map
 			display_surface.blit(backmap, backmap_rect)
 			
+			#BOX CHAT
+			text_box = self.font19.render(f'Chat: {user_text}', True, BLACK) 
+			text_box_rect = text_box.get_rect()
+			text_box_rect.topleft = (int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.05) ) 
+		
+			text_chat_rect = pygame.Rect(int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.026) , WINDOW_WIDTH // 4 , WINDOW_HEIGHT // 12 ) #để nhận biết nhấp chuột
+		
+			text_box_rect.centery = 0.02 * WINDOW_HEIGHT + text_chat_rect.h // 2  
+
+				#Checck color of the box
+			if active:
+				color = GRAY
+			else:
+				color = BLACK
+				#update HUD
+			display_surface.blit(box_chat, ( int(WINDOW_WIDTH*0.7), 0) ) 
+			try:
+				if len(user_text) <= 22: 
+					text_box = self.font19.render(f'Chat: {user_text}', True, color) 
+				else:
+					temp = user_text[len(user_text)-22:]
+					text_box = self.font19.render(f'Chat: {temp}', True, color)
+				display_surface.blit(text_box, text_box_rect)
+			except ValueError:
+				pass
+
+			text_box_extra = self.font17.render('(đánh dấu liền kề chữ cái)', True, color) 
+			text_box_extra_rect = text_box_extra.get_rect()
+			text_box_extra_rect.topleft = (int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.07) ) 
+			display_surface.blit(text_box_extra, text_box_extra_rect)
+
 			#Scroll the road
 			self.map_rects[0].x -= self.scroll_map
 			for i in range(1, self.map_length):
@@ -652,6 +820,18 @@ class Game():
 			
 			# Blit the HUD
 			self.show_HUD()
+
+			#Show chat
+			if (random.randint(0,1000) >= 998) and (temp <= 3):
+				temp += 1
+				self.show_chat()
+
+			if user_text_temp != "":
+				self.user_text += user_text_temp[:-1] + " " #AI_evaluate
+				self.show_chat(user_text_temp[:-1] + " ")
+				user_text_temp = ""
+			else:
+				self.show_chat("")
 			
 			pygame.display.update()
 			clock.tick(FPS)
