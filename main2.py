@@ -87,11 +87,14 @@ class Item_skill(pygame.sprite.Sprite):
 				self.player.slow_down_time += FPS  #three seconds
 			elif self.type == 3:
 				self.player.positionx += 150 #tele300 pixel
+				if self.player.rect.right + 150 >= my_game.map_rects[my_game.map_length - 1].right and my_game.map_rects[my_game.map_length - 1].right > WINDOW_WIDTH:
+					self.player.win_absolute = True
 			elif self.type == 4:
 				self.player.reverse_time += FPS
 			elif self.type == 5:
 				self.player.rect.right = my_game.map_rects[my_game.map_length - 1].right
-				self.player.win_absolute = True
+				if my_game.map_rects[my_game.map_length - 1].right > WINDOW_WIDTH:
+					self.player.win_absolute = True
 			elif self.type == 6:
 				self.player.positionx = my_game.map_rects[0].left
 			self.remove(self.item_group)
@@ -195,7 +198,7 @@ class Game():
 		self.show_map()
 	
 	def show_setting(self):
-		# Set button
+
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
 		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
@@ -724,7 +727,7 @@ class Game():
 			if len(self.rank) == 5:
 				self.show_victory()
 			# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
-			if random.randint(0,1000) >= 993:
+			if random.randint(0,1000) >= 990:
 				type = random.choices([1,2,3,4,5,6], weights=[0.3, 0.3, .05 , 0.3, .001, .001])[0]
 				index = random.randint(1,7)
 				for player in self.player_group.sprites():
@@ -801,13 +804,12 @@ class Game():
 			display_surface.blit(text_box_extra, text_box_extra_rect)
 
 			#Scroll the road
-			self.map_rects[0].x -= self.scroll_map
-			for i in range(1, self.map_length):
+			for i in range(self.map_length):
 				self.map_rects[i].x -= self.scroll_map
 			# Blit the road
-			for i in range(self.map_length):
-				if self.map_rects[i].left <= WINDOW_WIDTH:
-					display_surface.blit(map, self.map_rects[i])
+			for map_rect in self.map_rects:
+				if map_rect.left <= WINDOW_WIDTH or map_rect.right >= 0:
+					display_surface.blit(map, map_rect)
 			
 			# Run the player
 			self.player_group.update()
@@ -912,12 +914,7 @@ class Player(pygame.sprite.Sprite):
 			self.rect.x = int(self.positionx)
 			self.animate(self.animate_fps)
 		
-		'''if self.rect.right >= WINDOW_WIDTH:
-			for player in self.group.sprites():
-				player.positionx -= WINDOW_WIDTH - self.image.get_width()
-			my_game.map_rects[0].left -= WINDOW_WIDTH - self.image.get_width()
-			for i in range(1,my_game.map_length - 1):
-				my_game.map_rects[i].left = my_game.map_rects[i-1].right'''
+		
 		
 	def get_race(self):
 		#win absolute la dich chuyen thang ve dich, nen khong can ngung man hinh - > may con kia chay bthg
