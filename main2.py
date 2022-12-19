@@ -222,6 +222,60 @@ class Game():
 			pygame.display.update()
 			clock.tick(FPS)
 	
+	def preprocess_data(self, comments):
+
+		# get rid of "train"
+		comments = comments.replace("train", " ")
+		# Lower case
+		comments = comments.lower()
+		# Look for one or more characters between 0-9
+		comments = re.compile('[0-9]+').sub(' ', comments)
+		# Look for strings starting with http:// or https://
+		comments = re.compile('(http|https)://[^\s]*').sub(' ', comments)
+		# Look for strings with @ in the middle
+		comments = re.compile('[^\s]+@[^\s]+').sub(' ', comments)
+		# Handle $ sign
+		comments = re.compile('[$]+').sub(' ', comments)
+		# get rid of repeat letters
+		temp = " "
+		for letter in comments:
+			if (letter != temp[-1]):
+				temp += letter
+		comments = temp
+		# get rid of any punctuation
+		comments = re.split('[ #%^&*@$/#.-:&*+=\[\]?!(){},\'">_<;%\n\r\t\|]', comments)
+		# remove any empty word string
+		comments = [word for word in comments if len(word) > 0]
+
+		return comments
+
+	def sigmoid(self, z):
+		return(1 / (1 + np.exp(-z)))
+
+	def AI_evaluate(self, comments):
+		#Load vocabList and theta
+		vocabList = open("./asset/AI/vocabulary.txt",  encoding="utf8")
+		vocabList = str(vocabList.read()).split("\n")
+		theta = np.loadtxt('./asset/AI/optimizedTheta.txt')
+
+		#Digitize data
+		n = len(vocabList)  #numbers of features 
+		word_indices = [0 for i in range(n)]
+		comments = self.preprocess_data(comments)
+
+		for i in range(n):
+			if vocabList[i] in comments:
+				word_indices[i] += 1
+
+		#Output 
+		#print(self.sigmoid(np.array(word_indices) @ theta.T))
+		if len(comments) == 0:
+			print(u"\nBạn muốn nói gì sao?\n")
+		elif (self.sigmoid(np.array(word_indices) @ theta.T)) >= (0.5 + 10e-6) or ("chó" in comments) or ("lỗi" in comments):
+			print(u"\nBạn hẳn đã có một ngày không tốt!\nHãy để Silly Squad giúp bạn nhé!\n")
+		else:
+			print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
+
 	def show_bet(self):
 		# Load Text
 		gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
@@ -518,6 +572,8 @@ class Game():
 					#Click play again
 					if play_button.rect.collidepoint(pos):
 						self.AI_evaluate(self.user_text)
+						self.user_text = u""
+						self.show_text_chat = u""
 						show_vic_music.stop()
 						self.rank = []
 						self.show_main_menu()
@@ -566,69 +622,15 @@ class Game():
 				break
 			clock.tick(FPS)
 			pygame.display.update()
-			
-	def preprocess_data(self, comments):
 
-		# get rid of "train"
-		comments = comments.replace("train", " ")
-		# Lower case
-		comments = comments.lower()
-		# Look for one or more characters between 0-9
-		comments = re.compile('[0-9]+').sub(' ', comments)
-		# Look for strings starting with http:// or https://
-		comments = re.compile('(http|https)://[^\s]*').sub(' ', comments)
-		# Look for strings with @ in the middle
-		comments = re.compile('[^\s]+@[^\s]+').sub(' ', comments)
-		# Handle $ sign
-		comments = re.compile('[$]+').sub(' ', comments)
-		# get rid of repeat letters
-		temp = " "
-		for letter in comments:
-			if (letter != temp[-1]):
-				temp += letter
-		comments = temp
-		# get rid of any punctuation
-		comments = re.split('[ #%^&*@$/#.-:&*+=\[\]?!(){},\'">_<;%\n\r\t\|]', comments)
-		# remove any empty word string
-		comments = [word for word in comments if len(word) > 0]
-
-		return comments
-
-	def sigmoid(self, z):
-		return(1 / (1 + np.exp(-z)))
-
-	def AI_evaluate(self, comments):
-		#Load vocabList and theta
-		vocabList = open("./asset/AI/vocabulary.txt",  encoding="utf8")
-		vocabList = str(vocabList.read()).split("\n")
-		theta = np.loadtxt('./asset/AI/optimizedTheta.txt')
-
-		#Digitize data
-		n = len(vocabList)  #numbers of features 
-		word_indices = [0 for i in range(n)]
-		comments = self.preprocess_data(comments)
-
-		for i in range(n):
-			if vocabList[i] in comments:
-				word_indices[i] += 1
-
-		#Output 
-		#print(self.sigmoid(np.array(word_indices) @ theta.T))
-		if len(comments) == 0:
-			print(u"\nBạn muốn nói gì sao?\n")
-		elif (self.sigmoid(np.array(word_indices) @ theta.T)) >= (0.5 + 10e-6) or ("chó" in comments) or ("lỗi" in comments):
-			print(u"\nBạn hẳn đã có một ngày không tốt!\nHãy để Silly Squad giúp bạn nhé!\n")
-		else:
-			print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
-
-	def blit_text(self, surface, text, pos, font, color=pygame.Color('black')):
+	def blit_text(self, surface, text, pos, font, background_color = None, color=pygame.Color('black')):
 		words = [word.split(' ') for word in text.splitlines()]  # 2D array where each row is a list of words.
 		space = font.size(' ')[0]  # The width of a space.
 		max_width, max_height = surface.get_size()
 		x, y = pos
 		for line in words:
 			for word in line:
-				word_surface = font.render(word, 0, color)
+				word_surface = font.render(word, 0, color, background_color)
 				word_width, word_height = word_surface.get_size()
 				if x + word_width >= max_width:
 					x = pos[0]  # Reset the x.
@@ -643,6 +645,8 @@ class Game():
 			self.blit_text(display_surface, self.show_text_chat,(int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) , self.font17)
 			return 0
 		elif len(comments) > 0:
+			if self.show_text_chat.count("\n") >= 4:
+				self.show_text_chat = self.show_text_chat[self.show_text_chat.find("\n")+1 :]
 			self.show_text_chat +=  "User_name: " + str(comments)[2:-3] + "\n"  #self.user_name + str(comments)[2:-3] + "\n"
 		else:
 			temp = random.randint(1, 15)
@@ -663,6 +667,8 @@ class Game():
 			14:'Chỉ cần bạn có mặt, thắng thua không quan trọng',
 			15:'Hello bạn!',
 			}
+			if self.show_text_chat.count("\n") >= 4:
+				self.show_text_chat = self.show_text_chat[self.show_text_chat.find("\n")+1 :]
 			self.show_text_chat += "Chat Bot " + str(random.randint(1, 4)) + ": " +switcher.get(temp) + "\n"
 		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) 
 		text_box_rect = text_box.get_rect()
@@ -673,6 +679,22 @@ class Game():
 
 		self.blit_text(display_surface, self.show_text_chat,(int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) , self.font17)
 
+	def remove_Vietnamese_letter(self, s):
+		s = re.sub('[áàảãạăắằẳẵặâấầẩẫậ]', 'a', s)
+		s = re.sub('[ÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬ]', 'A', s)
+		s = re.sub('[éèẻẽẹêếềểễệ]', 'e', s)
+		s = re.sub('[ÉÈẺẼẸÊẾỀỂỄỆ]', 'E', s)
+		s = re.sub('[óòỏõọôốồổỗộơớờởỡợ]', 'o', s)
+		s = re.sub('[ÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢ]', 'O', s)
+		s = re.sub('[íìỉĩị]', 'i', s)
+		s = re.sub('[ÍÌỈĨỊ]', 'I', s)
+		s = re.sub('[úùủũụưứừửữự]', 'u', s)
+		s = re.sub('[ÚÙỦŨỤƯỨỪỬỮỰ]', 'U', s)
+		s = re.sub('[ýỳỷỹỵ]', 'y', s)
+		s = re.sub('[ÝỲỶỸỴ]', 'Y', s)
+		s = re.sub('đ', 'd', s)
+		s = re.sub('Đ', 'D', s)
+		return s
 
 	def race(self):
 		self.menu_music.stop()
@@ -681,8 +703,7 @@ class Game():
 		active = False
 		user_text = u""
 		user_text_temp = u""
-		self.user_text = u""
-		temp = 0
+		self.user_text = u"" #AI_evaluate
 		box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png"), ( int(WINDOW_WIDTH*0.3), int(WINDOW_HEIGHT*0.15) ) )
 		#Set n road continous
 		map = pygame.transform.scale(pygame.image.load(f"./asset/map/map{self.map}.png"), (WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -728,7 +749,7 @@ class Game():
 			if len(self.rank) == 5:
 				self.show_victory()
 			# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
-			if random.randint(0,1000) >= 993:
+			if random.randint(0,1000) >= 990:
 				type = random.choices([1,2,3,4,5,6], weights=[0.3, 0.3, .05 , 0.3, .001, .001])[0]
 				index = random.randint(1,7)
 				for player in self.player_group.sprites():
@@ -750,7 +771,7 @@ class Game():
 						active = True
 					else:
 						active = False					
-				if event.type == pygame.KEYDOWN:
+				'''if event.type == pygame.KEYDOWN:
 					if active:
 						if event.key == pygame.K_BACKSPACE:
 							user_text = user_text[: -1]
@@ -758,12 +779,44 @@ class Game():
 								user_text += event.unicode
 							continue
 
-						if len(user_text) <= 100:
+						if len(user_text) <= 70:
 							user_text += event.unicode
 
 						if  event.key == pygame.K_RETURN:
 							user_text_temp = user_text
-							user_text = u""
+							user_text = u""'''
+				if event.type == pygame.KEYDOWN:                  
+					if event.key == pygame.K_BACKSPACE:
+						if event.unicode.isalpha(): #dau tieng viet
+							#d + d
+							if self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 1:
+								user_text = user_text[: -1] + event.unicode
+							#du + d
+							elif self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 2:
+								user_text = user_text[:-2] + event.unicode + user_text[-1] * 2
+							#day + d
+							elif self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 3:
+								user_text = user_text[:-3] + event.unicode + user_text[-2:] * 2
+							#dung + d
+							elif self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 4:
+								user_text = user_text[:-4] + event.unicode + user_text[-3:] * 2
+							#duong + d
+							elif self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 5:
+								user_text = user_text[:-5] + event.unicode + user_text[-4:] * 2
+							if user_text.rfind("ư") + 1 <= len(user_text) - 1:
+								if event.unicode == "ư" and user_text[user_text.rfind("ư") + 1] == "o":
+									user_text[user_text.rfind("ư") + 1] = "ơ"
+							continue
+						else:
+							user_text = user_text[: -1]
+							continue
+
+					if len(user_text) <= 70:
+						user_text += event.unicode
+
+					if  event.key == pygame.K_RETURN:
+						user_text_temp = user_text
+						user_text = u""
 
 			#time getting
 			self.frame_count+= 1
@@ -793,8 +846,7 @@ class Game():
 				if len(user_text) <= 22: 
 					text_box = self.font19.render(f'Chat: {user_text}', True, color) 
 				else:
-					temp = user_text[len(user_text)-22:]
-					text_box = self.font19.render(f'Chat: {temp}', True, color)
+					text_box = self.font19.render(f'Chat: {user_text[len(user_text)-22:]}', True, color)
 				display_surface.blit(text_box, text_box_rect)
 			except ValueError:
 				pass
@@ -803,7 +855,7 @@ class Game():
 			text_box_extra_rect = text_box_extra.get_rect()
 			text_box_extra_rect.topleft = (int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.07) ) 
 			display_surface.blit(text_box_extra, text_box_extra_rect)
-			
+
 			#Scroll the road
 			for i in range(self.map_length):
 				self.map_rects[i].x -= self.scroll_map
@@ -825,8 +877,7 @@ class Game():
 			self.show_HUD()
 
 			#Show chat
-			if (random.randint(0,1000) >= 998) and (temp <= 3):
-				temp += 1
+			if (random.randint(0,1000) >= 998):
 				self.show_chat()
 
 			if user_text_temp != "":
