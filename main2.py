@@ -4,6 +4,7 @@ import numpy as np
 # FPS and clock
 FPS = 60
 clock = pygame.time.Clock()
+
 # Define Colors
 GREEN = (13, 255, 0)
 BLACK = (0, 0, 0)
@@ -12,10 +13,7 @@ RED = (255, 3, 3)
 GRAY = (80, 80, 80)
 
 # Create Display Surface(SCALE = 16 / 9)
-WINDOW_WIDTH = 1200
-WINDOW_HEIGHT = 675
 
-display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 
 class Button():
@@ -87,13 +85,13 @@ class Item_skill(pygame.sprite.Sprite):
 				self.player.slow_down_time += FPS  #three seconds
 			elif self.type == 3:
 				self.player.positionx += 150 #tele300 pixel
-				if self.player.rect.right + 150 >= my_game.map_rects[my_game.map_length - 1].right and my_game.map_rects[my_game.map_length - 1].right > WINDOW_WIDTH:
+				if self.player.rect.right + 150 >= my_game.map_rects[my_game.map_length - 1].right and my_game.map_rects[my_game.map_length - 1].right > my_game.WINDOW_WIDTH:
 					self.player.win_absolute = True
 			elif self.type == 4:
 				self.player.reverse_time += FPS
 			elif self.type == 5:
 				self.player.rect.right = my_game.map_rects[my_game.map_length - 1].right
-				if my_game.map_rects[my_game.map_length - 1].right > WINDOW_WIDTH:
+				if my_game.map_rects[my_game.map_length - 1].right > my_game.WINDOW_WIDTH:
 					self.player.win_absolute = True
 			elif self.type == 6:
 				self.player.positionx = my_game.map_rects[0].left
@@ -104,6 +102,12 @@ class Item_skill(pygame.sprite.Sprite):
 
 class Game():
 	def __init__(self):
+		#display value
+		self.WINDOW_WIDTH = 1200
+		self.WINDOW_HEIGHT = 675
+		
+		self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+		
 		self.scroll = 0
 		self.direction_scroll = 1
 		self.time = 0
@@ -111,7 +115,7 @@ class Game():
 		# Get BACKGROUND
 		image = pygame.image.load("./asset/image/back.webp").convert()
 		scale = int(image.get_width() / image.get_height())
-		self.back_ground_image = pygame.transform.scale(image, (int(WINDOW_HEIGHT * scale), WINDOW_HEIGHT))
+		self.back_ground_image = pygame.transform.scale(image, (int(self.WINDOW_HEIGHT * scale), self.WINDOW_HEIGHT))
 		
 		# Font
 		self.font32 = pygame.font.Font("./asset/font/font1.ttf", 32)
@@ -127,7 +131,7 @@ class Game():
 			image = pygame.image.load(f"./asset/skill/{i + 1}.png")
 			scale = image.get_width() / image.get_height()
 			self.item_image.append(
-				pygame.transform.scale(image, (int(scale * WINDOW_HEIGHT * 0.15), int(WINDOW_HEIGHT * 0.15))))
+				pygame.transform.scale(image, (int(scale * self.WINDOW_HEIGHT * 0.15), int(self.WINDOW_HEIGHT * 0.15))))
 		
 		
 		# Game Value, SET in TEXT file
@@ -141,26 +145,28 @@ class Game():
 		self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", 19)
 		self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", 17)
 	
+	
+	
 	def main(self):
 		# Music
 		self.menu_music = pygame.mixer.Sound("./asset/music/menu_music.mp3")
 		self.menu_music.set_volume(.2)
-		running = True
-		while running:
-			# Check close
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					running = False
-				self.show_main_menu()
-			clock.tick(FPS)
+		self.show_main_menu()
 	
 	def show_main_menu(self):
 		
 		# Button menu
-		start_button = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3,
-		                      pygame.image.load("./asset/button/start_button.png"), 0.2)
-		setting_button = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3 + 130,
-		                        pygame.image.load("./asset/button/setting_button.png"), 0.2)
+		image = pygame.image.load("./asset/button/start_button.png")
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale,self.WINDOW_HEIGHT // 8))
+		start_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3,
+		                      image, 1)
+		image = pygame.image.load("./asset/button/setting_button.png")
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale, self.WINDOW_HEIGHT // 8))
+		
+		setting_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + 100,
+		                        image, 1)
 		
 		self.menu_music.stop()
 		self.menu_music.play(-1)
@@ -181,18 +187,18 @@ class Game():
 					if setting_button.rect.collidepoint(pos):
 						self.show_setting()
 			
-			start_button.draw(display_surface)
-			setting_button.draw(display_surface)
+			start_button.draw(self.display_surface)
+			setting_button.draw(self.display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
 	def show_back_ground(self):
 		if self.scroll <= 0:
 			self.direction_scroll = 1
-		if self.scroll >= self.back_ground_image.get_width() - WINDOW_WIDTH:
+		if self.scroll >= self.back_ground_image.get_width() - self.WINDOW_WIDTH:
 			self.direction_scroll = -1
 		self.scroll += self.direction_scroll * .5
-		display_surface.blit(self.back_ground_image, (-self.scroll, 0))
+		self.display_surface.blit(self.back_ground_image, (-self.scroll, 0))
 	
 	def start_new_round(self):
 		self.show_map()
@@ -201,9 +207,9 @@ class Game():
 
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
-		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
+		image = pygame.transform.scale(image, (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
 		# GO BACK BUTTON
-		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
+		go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT), image, 1)
 		setting = True
 		while setting:
 			for event in pygame.event.get():
@@ -218,7 +224,7 @@ class Game():
 			
 			self.show_back_ground()
 			# DRAW BUTTON
-			go_back_button.draw(display_surface)
+			go_back_button.draw(self.display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
@@ -280,47 +286,47 @@ class Game():
 		# Load Text
 		gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
 		gold_text_rect = gold_text.get_rect()
-		gold_text_rect.topleft = (0.15 * WINDOW_WIDTH, int(0.62 * WINDOW_HEIGHT))
+		gold_text_rect.topleft = (0.15 * self.WINDOW_WIDTH, int(0.62 * self.WINDOW_HEIGHT))
 		
 		user_text = "100"
 		
 		bet_text = self.font32.render(f' BET: {user_text}', True, YELLOW)
 		bet_text_rect = bet_text.get_rect()
-		bet_text_rect.topleft = (int(0.15 * WINDOW_WIDTH), int(0.7 * WINDOW_HEIGHT))
+		bet_text_rect.topleft = (int(0.15 * self.WINDOW_WIDTH), int(0.7 * self.WINDOW_HEIGHT))
 		
-		text_box = pygame.Rect(int(0.15 * WINDOW_WIDTH), int(0.7 * WINDOW_HEIGHT), WINDOW_WIDTH // 3,
-		                       WINDOW_HEIGHT // 10)
+		text_box = pygame.Rect(int(0.15 * self.WINDOW_WIDTH), int(0.7 * self.WINDOW_HEIGHT), self.WINDOW_WIDTH // 3,
+		                       self.WINDOW_HEIGHT // 10)
 		color = YELLOW
 		active = False
 		error = False
 		
-		bet_text_rect.centery = 0.7 * WINDOW_HEIGHT + text_box.h / 2
+		bet_text_rect.centery = 0.7 * self.WINDOW_HEIGHT + text_box.h / 2
 		
 		# Play button
 		image = pygame.image.load("./asset/button/play_now_button.png")
 		scale = image.get_height() / image.get_width()
-		image = pygame.transform.scale(image, (int(0.33 * WINDOW_WIDTH), int(scale * 0.33 * WINDOW_WIDTH)))
-		play_button = Button(int(0.8 * WINDOW_WIDTH), int(0.72 * WINDOW_HEIGHT), image, 1)
+		image = pygame.transform.scale(image, (int(0.33 * self.WINDOW_WIDTH), int(scale * 0.33 * self.WINDOW_WIDTH)))
+		play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
 		
 		# Load thumbnail
 		self.bet_thumbnail_images = []
 		for i in range(5):
 			image = pygame.image.load(f'./asset/set/set_avt/{self.set}{i + 1}.png')
 			scale = image.get_height() / image.get_width()
-			image = pygame.transform.scale(image, (int(0.1525 * WINDOW_WIDTH), int(0.1525 * WINDOW_WIDTH * scale)))
+			image = pygame.transform.scale(image, (int(0.1525 * self.WINDOW_WIDTH), int(0.1525 * self.WINDOW_WIDTH * scale)))
 			self.bet_thumbnail_images.append(image)
 		
 		self.bet_thumbnails = []
 		for i in range(5):
-			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * WINDOW_WIDTH))
-			                       , int(0.195 * WINDOW_HEIGHT), self.bet_thumbnail_images[i])
+			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH))
+			                       , int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i])
 			self.bet_thumbnails.append(thumbnail)
 		
 		# Go back button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
-		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
-		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
+		image = pygame.transform.scale(image, (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+		go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT), image, 1)
 		
 		# User click the thumnail
 		have_click = False
@@ -379,10 +385,10 @@ class Game():
 			self.show_back_ground()
 			# Draw character
 			for i in range(5):
-				self.bet_thumbnails[i].draw(display_surface)
+				self.bet_thumbnails[i].draw(self.display_surface)
 			# DRAW BUTTON
-			go_back_button.draw(display_surface)
-			play_button.draw(display_surface)
+			go_back_button.draw(self.display_surface)
+			play_button.draw(self.display_surface)
 			
 			# CHECK COLORS OF THE BOX
 			if active:
@@ -395,9 +401,9 @@ class Game():
 			
 			gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)  # Update HUD
 			bet_text = self.font32.render(f' BET: {user_text}', True, color)  # Update HUD
-			display_surface.blit(gold_text, gold_text_rect)
-			display_surface.blit(bet_text, bet_text_rect)
-			pygame.draw.rect(display_surface, color, text_box, 3)
+			self.display_surface.blit(gold_text, gold_text_rect)
+			self.display_surface.blit(bet_text, bet_text_rect)
+			pygame.draw.rect(self.display_surface, color, text_box, 3)
 			
 			pygame.display.update()
 			clock.tick(FPS)
@@ -407,7 +413,7 @@ class Game():
 		self.map_thumbnail_images = []
 		for i in range(1, 7):
 			image = pygame.image.load(f"./asset/map/showmap{i}.png")
-			image = pygame.transform.scale(image, (int(0.271 * WINDOW_WIDTH), int(0.271 * WINDOW_HEIGHT)))
+			image = pygame.transform.scale(image, (int(0.271 * self.WINDOW_WIDTH), int(0.271 * self.WINDOW_HEIGHT)))
 			self.map_thumbnail_images.append(image)
 		
 		self.map_thumbnail = []
@@ -415,20 +421,20 @@ class Game():
 		for i in range(6):
 			if i <= 2:
 				self.map_thumbnail.append(
-					Button(int(i * (self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH)
-					           + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
-					       int(0.314 * WINDOW_HEIGHT)
+					Button(int(i * (self.map_thumbnail_images[i].get_width() + 0.040 * self.WINDOW_WIDTH)
+					           + 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+					       int(0.314 * self.WINDOW_HEIGHT)
 					       , self.map_thumbnail_images[i], 1))
 			else:
 				self.map_thumbnail.append(
-					Button(int((i - 3) * (self.map_thumbnail_images[i].get_width() + 0.040 * WINDOW_WIDTH)
-					           + 0.051 * WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
-					       int((0.314 + 0.377) * WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
+					Button(int((i - 3) * (self.map_thumbnail_images[i].get_width() + 0.040 * self.WINDOW_WIDTH)
+					           + 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+					       int((0.314 + 0.377) * self.WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
 		# GO BACK BUTTON
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
-		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
-		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
+		image = pygame.transform.scale(image, (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+		go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT), image, 1)
 		mapping = True
 		while mapping:
 			for event in pygame.event.get():
@@ -448,9 +454,9 @@ class Game():
 			self.show_back_ground()
 			# DRAW BUTTON
 			for i in range(6):
-				self.map_thumbnail[i].draw(display_surface)
+				self.map_thumbnail[i].draw(self.display_surface)
 			
-			go_back_button.draw(display_surface)
+			go_back_button.draw(self.display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
@@ -459,24 +465,24 @@ class Game():
 		images = []
 		for i in range(4):
 			image = pygame.image.load(f"./asset/set/set_avt/all_set{i+1}.png")
-			image = pygame.transform.scale(image, (int(0.286 * WINDOW_HEIGHT), int(0.286 * WINDOW_HEIGHT)))
+			image = pygame.transform.scale(image, (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
 			images.append(image)
 		self.sets_thumbnail = []
 		# Chua te hard code
 		for i in range(4):
 			if i <= 2:
-				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + i * (0.16 + 0.146) * WINDOW_WIDTH)
-				                                  , int(0.317 * WINDOW_HEIGHT), images[i], 1))
+				self.sets_thumbnail.append(Button(int(0.192 * self.WINDOW_WIDTH + i * (0.16 + 0.146) * self.WINDOW_WIDTH)
+				                                  , int(0.317 * self.WINDOW_HEIGHT), images[i], 1))
 			else:
-				self.sets_thumbnail.append(Button(int(0.192 * WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * WINDOW_WIDTH)
-				                                  , int(0.7196 * WINDOW_HEIGHT), images[i], 1))
+				self.sets_thumbnail.append(Button(int(0.192 * self.WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * self.WINDOW_WIDTH)
+				                                  , int(0.7196 * self.WINDOW_HEIGHT), images[i], 1))
 		# Set button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
-		image = pygame.transform.scale(image, (int(0.0688 * WINDOW_HEIGHT * scale), int(0.0688 * WINDOW_HEIGHT)))
+		image = pygame.transform.scale(image, (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
 		# GO BACK BUTTON
 		
-		go_back_button = Button(int(0.051 * WINDOW_WIDTH + image.get_width() / 2), int(0.075 * WINDOW_HEIGHT), image, 1)
+		go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT), image, 1)
 		chosing_set = True
 		while chosing_set:
 			for event in pygame.event.get():
@@ -496,8 +502,8 @@ class Game():
 			self.show_back_ground()
 			# DRAW BUTTON
 			for i in range(4):
-				self.sets_thumbnail[i].draw(display_surface)
-			go_back_button.draw(display_surface)
+				self.sets_thumbnail[i].draw(self.display_surface)
+			go_back_button.draw(self.display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
@@ -506,53 +512,53 @@ class Game():
 		show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
 		show_vic_music.play(-1)
 		image = pygame.image.load("./asset/image/show_vic.png")
-		self.victory_image = pygame.transform.scale(image, (WINDOW_WIDTH,WINDOW_HEIGHT))
+		self.victory_image = pygame.transform.scale(image, (self.WINDOW_WIDTH,self.WINDOW_HEIGHT))
 		
 		image = pygame.image.load("./asset/button/play_now_button.png")
 		scale = image.get_height() / image.get_width()
-		image = pygame.transform.scale(image, (int(0.15 * WINDOW_WIDTH), int(scale * 0.15 * WINDOW_WIDTH)))
-		play_button = Button(int(0.8 * WINDOW_WIDTH), int(0.72 * WINDOW_HEIGHT), image, 1)
-		play_button.rect.bottomright = (WINDOW_WIDTH - 10, WINDOW_HEIGHT - 10)
+		image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH), int(scale * 0.15 * self.WINDOW_WIDTH)))
+		play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
+		play_button.rect.bottomright = (self.WINDOW_WIDTH - 10, self.WINDOW_HEIGHT - 10)
 		
 		player = self.rank[0]
 		scale = player.image.get_height() / player.image.get_width()
 		for image in player.frame:
-			image = pygame.transform.scale(image, (int(0.25 * WINDOW_HEIGHT), int(0.25 * WINDOW_HEIGHT * scale)))
+			image = pygame.transform.scale(image, (int(0.25 * self.WINDOW_HEIGHT), int(0.25 * self.WINDOW_HEIGHT * scale)))
 		player.rect = player.image.get_rect()
-		player.rect.bottom = 0.66 * WINDOW_HEIGHT
-		player.rect.centerx = 0.5 * WINDOW_WIDTH
+		player.rect.bottom = 0.66 * self.WINDOW_HEIGHT
+		player.rect.centerx = 0.5 * self.WINDOW_WIDTH
 
 		
 		player = self.rank[1]
 		for image in player.frame:
-			image = pygame.transform.scale(image, (int(0.2 * WINDOW_HEIGHT), int(0.2 * WINDOW_HEIGHT * scale)))
+			image = pygame.transform.scale(image, (int(0.2 * self.WINDOW_HEIGHT), int(0.2 * self.WINDOW_HEIGHT * scale)))
 		player.rect = player.image.get_rect()
-		player.rect.bottom = 0.62 * WINDOW_HEIGHT
-		player.rect.centerx = 0.3 * WINDOW_WIDTH
+		player.rect.bottom = 0.62 * self.WINDOW_HEIGHT
+		player.rect.centerx = 0.3 * self.WINDOW_WIDTH
 
 		
 		player = self.rank[2]
 		for image in player.frame:
-			image = pygame.transform.scale(image, (int(0.2 * WINDOW_HEIGHT), int(0.2 * WINDOW_HEIGHT * scale)))
+			image = pygame.transform.scale(image, (int(0.2 * self.WINDOW_HEIGHT), int(0.2 * self.WINDOW_HEIGHT * scale)))
 		player.rect = player.image.get_rect()
-		player.rect.bottom = 0.62 * WINDOW_HEIGHT
-		player.rect.centerx = 0.67 * WINDOW_WIDTH
+		player.rect.bottom = 0.62 * self.WINDOW_HEIGHT
+		player.rect.centerx = 0.67 * self.WINDOW_WIDTH
 
 		
 		player = self.rank[3]
 		for image in player.frame:
-			image = pygame.transform.scale(image, (int(0.14 * WINDOW_HEIGHT), int(0.14 * WINDOW_HEIGHT * scale)))
+			image = pygame.transform.scale(image, (int(0.14 * self.WINDOW_HEIGHT), int(0.14 * self.WINDOW_HEIGHT * scale)))
 		player.rect = player.image.get_rect()
-		player.rect.bottom = 0.5 * WINDOW_HEIGHT
-		player.rect.centerx = 0.82 * WINDOW_WIDTH
+		player.rect.bottom = 0.5 * self.WINDOW_HEIGHT
+		player.rect.centerx = 0.82 * self.WINDOW_WIDTH
 
 		
 		player = self.rank[4]
 		for image in player.frame:
-			image = pygame.transform.scale(image, (int(0.14 * WINDOW_HEIGHT), int(0.14 * WINDOW_HEIGHT * scale)))
+			image = pygame.transform.scale(image, (int(0.14 * self.WINDOW_HEIGHT), int(0.14 * self.WINDOW_HEIGHT * scale)))
 		player.rect = player.image.get_rect()
-		player.rect.bottom = 0.5 * WINDOW_HEIGHT
-		player.rect.centerx = 0.15 * WINDOW_WIDTH
+		player.rect.bottom = 0.5 * self.WINDOW_HEIGHT
+		player.rect.centerx = 0.15 * self.WINDOW_WIDTH
 		
 		#cong tien
 		if self.bet == self.rank[0].index:
@@ -578,11 +584,11 @@ class Game():
 						self.rank = []
 						self.show_main_menu()
 						
-			display_surface.blit(self.victory_image,(0,0))
-			play_button.draw(display_surface)
+			self.display_surface.blit(self.victory_image,(0,0))
+			play_button.draw(self.display_surface)
 			for player in self.rank:
 				player.animate(.2)
-			self.player_group.draw(display_surface)
+			self.player_group.draw(self.display_surface)
 			# DRAW BUTTON
 			pygame.display.update()
 			clock.tick(FPS)
@@ -591,11 +597,11 @@ class Game():
 		pass
 	
 	def count_down(self):
-		num3_image = pygame.transform.scale(pygame.image.load("./asset/image/num3.png"),(WINDOW_WIDTH//2, WINDOW_WIDTH//2))
-		num2_image = pygame.transform.scale(pygame.image.load("./asset/image/num2.png"),(WINDOW_WIDTH//2, WINDOW_WIDTH//2))
-		num1_image = pygame.transform.scale(pygame.image.load("./asset/image/num1.png"),(WINDOW_WIDTH//2, WINDOW_WIDTH//2))
+		num3_image = pygame.transform.scale(pygame.image.load("./asset/image/num3.png"),(self.WINDOW_WIDTH//2, self.WINDOW_WIDTH//2))
+		num2_image = pygame.transform.scale(pygame.image.load("./asset/image/num2.png"),(self.WINDOW_WIDTH//2, self.WINDOW_WIDTH//2))
+		num1_image = pygame.transform.scale(pygame.image.load("./asset/image/num1.png"),(self.WINDOW_WIDTH//2, self.WINDOW_WIDTH//2))
 		rect = num3_image.get_rect()
-		rect.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT //2)
+		rect.center = (self.WINDOW_WIDTH//2, self.WINDOW_HEIGHT //2)
 		
 		music = pygame.mixer.Sound("./asset/music/count_down_music.mp3")
 		
@@ -611,13 +617,13 @@ class Game():
 			if frame_count == FPS / 10:
 				frame_count = 0
 				time -= 0.1
-			display_surface.fill(BLACK)
+			self.display_surface.fill(BLACK)
 			if time > 2:
-				display_surface.blit(num3_image, rect)
+				self.display_surface.blit(num3_image, rect)
 			if time <= 2 and time > 1:
-				display_surface.blit(num2_image, rect)
+				self.display_surface.blit(num2_image, rect)
 			if time <= 1 and time > 0:
-				display_surface.blit(num1_image, rect)
+				self.display_surface.blit(num1_image, rect)
 			if time <= 0:
 				break
 			clock.tick(FPS)
@@ -642,7 +648,7 @@ class Game():
 
 	def show_chat(self, *comments):
 		if str(comments) == "('',)": #đưa vào chuỗi rỗng
-			self.blit_text(display_surface, self.show_text_chat,(int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) , self.font17)
+			self.blit_text(self.display_surface, self.show_text_chat,(int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.05) ) , self.font17)
 			return 0
 		elif len(comments) > 0:
 			if self.show_text_chat.count("\n") >= 4:
@@ -672,12 +678,12 @@ class Game():
 			self.show_text_chat += "Chat Bot " + str(random.randint(1, 4)) + ": " +switcher.get(temp) + "\n"
 		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) 
 		text_box_rect = text_box.get_rect()
-		text_box_rect.topleft = (int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) 
-		text_box_rect.centery = 0.05 * WINDOW_HEIGHT 
+		text_box_rect.topleft = (int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.05) )
+		text_box_rect.centery = 0.05 * self.WINDOW_HEIGHT
 
 		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) #update HUD
 
-		self.blit_text(display_surface, self.show_text_chat,(int(WINDOW_WIDTH*0.05), int(WINDOW_HEIGHT*0.05) ) , self.font17)
+		self.blit_text(self.display_surface, self.show_text_chat,(int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.05) ) , self.font17)
 
 	def remove_Vietnamese_letter(self, s):
 		s = re.sub('[áàảãạăắằẳẵặâấầẩẫậ]', 'a', s)
@@ -704,9 +710,13 @@ class Game():
 		user_text = u""
 		user_text_temp = u""
 		self.user_text = u"" #AI_evaluate
-		box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png"), ( int(WINDOW_WIDTH*0.3), int(WINDOW_HEIGHT*0.15) ) )
+		box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png")
+		                                  , ( int(self.WINDOW_WIDTH*0.3), int(self.WINDOW_HEIGHT*0.15) ) )
+		
 		#Set n road continous
-		map = pygame.transform.scale(pygame.image.load(f"./asset/map/map{self.map}.png"), (WINDOW_WIDTH, WINDOW_HEIGHT))
+		map = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.png"), (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+		last_map = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.1.png"), (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+		
 		self.map_rects = []
 		for i in range(self.map_length):
 			rect = map.get_rect()
@@ -721,9 +731,9 @@ class Game():
 		
 		backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 		scale = backmap.get_width() / backmap.get_height()
-		backmap = pygame.transform.scale(backmap, (WINDOW_HEIGHT * scale, WINDOW_HEIGHT))
+		backmap = pygame.transform.scale(backmap, (self.WINDOW_HEIGHT * scale, self.WINDOW_HEIGHT))
 		backmap_rect = backmap.get_rect()
-		backmap_rect.center = WINDOW_WIDTH //2 , WINDOW_HEIGHT // 2
+		backmap_rect.center = self.WINDOW_WIDTH //2 , self.WINDOW_HEIGHT // 2
 		self.player_group = pygame.sprite.Group()
 		
 		#Item
@@ -731,7 +741,7 @@ class Game():
 
 		#Add Character
 		for i in range(1, 6):
-			player = Player(i, 0, WINDOW_HEIGHT * 0.263 + (i - 1) * WINDOW_HEIGHT * 0.174,self.player_group)
+			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174,self.player_group)
 			self.player_group.add(player)
 		
 		
@@ -771,22 +781,10 @@ class Game():
 						active = True
 					else:
 						active = False					
-				'''if event.type == pygame.KEYDOWN:
-					if active:
-						if event.key == pygame.K_BACKSPACE:
-							user_text = user_text[: -1]
-							if event.unicode.isalpha():
-								user_text += event.unicode
-							continue
 
-						if len(user_text) <= 70:
-							user_text += event.unicode
-
-						if  event.key == pygame.K_RETURN:
-							user_text_temp = user_text
-							user_text = u""'''
 				if event.type == pygame.KEYDOWN:                  
 					if event.key == pygame.K_BACKSPACE:
+						#Go dau
 						if event.unicode.isalpha(): #dau tieng viet
 							#d + d
 							if self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 1:
@@ -803,6 +801,7 @@ class Game():
 							#duong + d
 							elif self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 5:
 								user_text = user_text[:-5] + event.unicode + user_text[-4:] * 2
+							
 							if user_text.rfind("ư") + 1 <= len(user_text) - 1:
 								if event.unicode == "ư" and user_text[user_text.rfind("ư") + 1] == "o":
 									user_text[user_text.rfind("ư") + 1] = "ơ"
@@ -824,16 +823,16 @@ class Game():
 				self.time += 1
 			
 			#Show Back map
-			display_surface.blit(backmap, backmap_rect)
+			self.display_surface.blit(backmap, backmap_rect)
 			
 			#BOX CHAT
 			text_box = self.font19.render(f'Chat: {user_text}', True, BLACK) 
 			text_box_rect = text_box.get_rect()
-			text_box_rect.topleft = (int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.05) ) 
+			text_box_rect.topleft = (int(self.WINDOW_WIDTH*0.73), int(self.WINDOW_HEIGHT*0.05) )
 		
-			text_chat_rect = pygame.Rect(int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.026) , WINDOW_WIDTH // 4 , WINDOW_HEIGHT // 12 ) #để nhận biết nhấp chuột
+			text_chat_rect = pygame.Rect(int(self.WINDOW_WIDTH*0.73), int(self.WINDOW_HEIGHT*0.026) , self.WINDOW_WIDTH // 4 , self.WINDOW_HEIGHT // 12 ) #để nhận biết nhấp chuột
 		
-			text_box_rect.centery = 0.02 * WINDOW_HEIGHT + text_chat_rect.h // 2  
+			text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
 
 				#Checck color of the box
 			if active:
@@ -841,37 +840,41 @@ class Game():
 			else:
 				color = BLACK
 				#update HUD
-			display_surface.blit(box_chat, ( int(WINDOW_WIDTH*0.7), 0) ) 
+			self.display_surface.blit(box_chat, ( int(self.WINDOW_WIDTH*0.7), 0) )
 			try:
 				if len(user_text) <= 22: 
 					text_box = self.font19.render(f'Chat: {user_text}', True, color) 
 				else:
 					text_box = self.font19.render(f'Chat: {user_text[len(user_text)-22:]}', True, color)
-				display_surface.blit(text_box, text_box_rect)
+				self.display_surface.blit(text_box, text_box_rect)
 			except ValueError:
 				pass
 
 			text_box_extra = self.font17.render('(đánh dấu liền kề chữ cái)', True, color) 
 			text_box_extra_rect = text_box_extra.get_rect()
-			text_box_extra_rect.topleft = (int(WINDOW_WIDTH*0.73), int(WINDOW_HEIGHT*0.07) ) 
-			display_surface.blit(text_box_extra, text_box_extra_rect)
+			text_box_extra_rect.topleft = (int(self.WINDOW_WIDTH*0.73), int(self.WINDOW_HEIGHT*0.07) )
+			self.display_surface.blit(text_box_extra, text_box_extra_rect)
 
 			#Scroll the road
 			for i in range(self.map_length):
 				self.map_rects[i].x -= self.scroll_map
+				
 			# Blit the road
-			for map_rect in self.map_rects:
-				if map_rect.left <= WINDOW_WIDTH or map_rect.right >= 0:
-					display_surface.blit(map, map_rect)
+			for i in range(self.map_length):
+				if self.map_rects[i].left <= self.WINDOW_WIDTH or self.map_rects[i].right >= 0:
+					if i != self.map_length - 1:
+						self.display_surface.blit(map, self.map_rects[i])
+					else:
+						self.display_surface.blit(last_map, self.map_rects[i])
 			
 			# Run the player
 			self.player_group.update()
-			self.player_group.draw(display_surface)
+			self.player_group.draw(self.display_surface)
 			
 			
 			#BLit the item
 			item_group.update()
-			item_group.draw(display_surface)
+			item_group.draw(self.display_surface)
 			
 			# Blit the HUD
 			self.show_HUD()
@@ -909,7 +912,7 @@ class Player(pygame.sprite.Sprite):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
 			scale = image.get_width() / image.get_height()
 			self.origin_frame.append(
-				pygame.transform.scale(image, (int(WINDOW_HEIGHT * 0.15 * scale), int(WINDOW_HEIGHT * 0.15))))
+				pygame.transform.scale(image, (int(my_game.WINDOW_HEIGHT * 0.15 * scale), int(my_game.WINDOW_HEIGHT * 0.15))))
 		
 		self.flip_frame = []
 		for i in range(9):
@@ -973,7 +976,7 @@ class Player(pygame.sprite.Sprite):
 		if not self.win_absolute:
 			self.running = False
 			my_game.rank.append(self)
-			if my_game.map_rects[my_game.map_length-1].right <= WINDOW_WIDTH:
+			if my_game.map_rects[my_game.map_length-1].right <= my_game.WINDOW_WIDTH:
 				my_game.scroll_map = 0
 				my_game.scroll_map_bool = False
 			for player in self.group.sprites():
