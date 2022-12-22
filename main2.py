@@ -112,10 +112,7 @@ class Game():
 		self.direction_scroll = 1
 		self.time = 0
 		self.frame_count = 0
-		# Get BACKGROUND
-		image = pygame.image.load("./asset/image/back.webp").convert()
-		scale = int(image.get_width() / image.get_height())
-		self.back_ground_image = pygame.transform.scale(image, (int(self.WINDOW_HEIGHT * scale), self.WINDOW_HEIGHT))
+		
 		
 		# Font
 		self.font32 = pygame.font.Font("./asset/font/font1.ttf", 32)
@@ -123,7 +120,7 @@ class Game():
 		#sound
 		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
 		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
-		
+		self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.mp3")
 		
 		# Item image
 		self.item_image = []
@@ -154,6 +151,10 @@ class Game():
 		self.show_main_menu()
 	
 	def show_main_menu(self):
+		#Load background
+		image = pygame.image.load("./asset/image/back.webp").convert()
+		scale = int(image.get_width() / image.get_height())
+		self.back_ground_image = pygame.transform.scale(image, (int(self.WINDOW_HEIGHT * scale), self.WINDOW_HEIGHT))
 		
 		# Button menu
 		image = pygame.image.load("./asset/button/start_button.png")
@@ -210,6 +211,14 @@ class Game():
 		image = pygame.transform.scale(image, (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
 		# GO BACK BUTTON
 		go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT), image, 1)
+		
+		#setting option button
+		image = pygame.image.load("./asset/button/resolution_button'.png")
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image,
+		                               (self.WINDOW_HEIGHT //10 * scale, self.WINDOW_HEIGHT //10))
+		resolution_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3, image, 1)
+		
 		setting = True
 		while setting:
 			for event in pygame.event.get():
@@ -221,10 +230,84 @@ class Game():
 					# Check click Map
 					if go_back_button.rect.collidepoint(pos):
 						setting = False
-			
+					if resolution_button.rect.collidepoint(pos):
+						self.show_resolution()
+						
+					
 			self.show_back_ground()
 			# DRAW BUTTON
 			go_back_button.draw(self.display_surface)
+			resolution_button.draw(self.display_surface)
+			pygame.display.update()
+			clock.tick(FPS)
+	
+	def show_resolution(self):
+		# resolution option button
+		image = pygame.image.load("./asset/button/600x330.png")
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image,(self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
+		btn_600x330 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3, image, 1)
+		
+		image = pygame.image.load("./asset/button/800x450.png")
+		image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
+		btn_800x450 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + self.WINDOW_HEIGHT//6, image, 1)
+		
+		image = pygame.image.load("./asset/button/1200x675.png")
+		image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
+		btn_1200x675 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + 2*self.WINDOW_HEIGHT//6, image, 1)
+		
+		image = pygame.image.load("./asset/button/1600x900.png")
+		image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
+		btn_1600x900 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + 3*self.WINDOW_HEIGHT//6, image, 1)
+		
+		# GO BACK BUTTON
+		image = pygame.image.load("./asset/button/go_back_button.png")
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image,
+		                               (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+		go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
+		                        image, 1)
+		resulutioning = True
+		while resulutioning:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					pos = pygame.mouse.get_pos()
+					# Check click Map
+					if go_back_button.rect.collidepoint(pos):
+						resulutioning = False
+					if btn_600x330.rect.collidepoint(pos):
+						self.WINDOW_WIDTH = 600
+						self.WINDOW_HEIGHT = 337
+						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.show_main_menu()
+					
+					if btn_800x450.rect.collidepoint(pos):
+						self.WINDOW_WIDTH = 800
+						self.WINDOW_HEIGHT = 450
+						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.show_main_menu()
+					
+					if btn_1600x900.rect.collidepoint(pos):
+						self.WINDOW_WIDTH = 1600
+						self.WINDOW_HEIGHT = 900
+						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.show_main_menu()
+						
+					if btn_1200x675.rect.collidepoint(pos):
+						self.WINDOW_WIDTH = 1200
+						self.WINDOW_HEIGHT = 675
+						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.show_main_menu()
+			self.show_back_ground()
+			# DRAW BUTTON
+			go_back_button.draw(self.display_surface)
+			btn_600x330.draw(self.display_surface)
+			btn_800x450.draw(self.display_surface)
+			btn_1200x675.draw(self.display_surface)
+			btn_1600x900.draw(self.display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
@@ -304,8 +387,8 @@ class Game():
 		
 		# Play button
 		image = pygame.image.load("./asset/button/play_now_button.png")
-		scale = image.get_height() / image.get_width()
-		image = pygame.transform.scale(image, (int(0.33 * self.WINDOW_WIDTH), int(scale * 0.33 * self.WINDOW_WIDTH)))
+		scale = image.get_width() / image.get_height()
+		image = pygame.transform.scale(image, (scale * self.WINDOW_HEIGHT * 0.1, self.WINDOW_HEIGHT * 0.1))
 		play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
 		
 		# Load thumbnail
@@ -759,7 +842,7 @@ class Game():
 			if len(self.rank) == 5:
 				self.show_victory()
 			# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
-			if random.randint(0,1000) >= 990:
+			if random.randint(0,1000) >= 997:
 				type = random.choices([1,2,3,4,5,6], weights=[0.3, 0.3, .05 , 0.3, .001, .001])[0]
 				index = random.randint(1,7)
 				for player in self.player_group.sprites():
@@ -908,6 +991,7 @@ class Player(pygame.sprite.Sprite):
 		self.origin_frame = []
 		self.speed_up_time = self.reverse_time = self.slow_down_time = 0
 		
+		
 		for i in range(9):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
 			scale = image.get_width() / image.get_height()
@@ -924,7 +1008,13 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.bottomleft = (x, y)
 		self.positionx = x
-	
+		
+		#variable for celebartion
+		self.is_cele = False
+		self.origin_x = x
+		self.origin_y = y
+		self.cele = -2
+		
 	def skill(self):
 		#UU tien phep quay lui, neu gap quay lui xoa het phep con lai
 		if self.reverse_time > 0:
@@ -950,15 +1040,17 @@ class Player(pygame.sprite.Sprite):
 			self.slow_down_time -= 1
 			self.speed_up_time = 0
 		
-		
-
 	
 	def update(self):
 		self.skill()
-		
+		if self.is_cele:
+			self.celebrate()
 		if self.rect.right >= my_game.map_rects[my_game.map_length-1].right:
 			self.rect.right = my_game.map_rects[my_game.map_length-1].right
 			if self not in my_game.rank:
+				if len(my_game.rank) == 0:
+					my_game.yeah_sound.play()
+					self.is_cele = True
 				self.get_race()
 			
 		if self.win_absolute and my_game.scroll_map_bool:
@@ -969,8 +1061,10 @@ class Player(pygame.sprite.Sprite):
 			self.rect.x = int(self.positionx)
 			self.animate(self.animate_fps)
 		
-		
-		
+		#draw mui ten
+		if self.index == my_game.bet:
+			pygame.draw.circle(my_game.display_surface,GREEN,(self.rect.centerx, self.rect.top - 10),7,0)
+
 	def get_race(self):
 		#win absolute la dich chuyen thang ve dich, nen khong can ngung man hinh - > may con kia chay bthg
 		if not self.win_absolute:
@@ -995,7 +1089,18 @@ class Player(pygame.sprite.Sprite):
 			self.current_frame = 0
 		self.image = self.frame[int(self.current_frame)]
 	
-
+	
+	def celebrate(self):
+		self.rect.bottom += self.cele
+		
+		if self.rect.bottom >= self.origin_y:
+			if self.cele > 0:
+				self.cele *= -1
+		
+		if self.rect.bottom <= self.origin_y - 40:
+			if self.cele < 0:
+				self.cele *= -1
+	
 
 pygame.init()
 my_game = Game()
