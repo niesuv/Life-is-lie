@@ -78,7 +78,7 @@ class Item_skill(pygame.sprite.Sprite):
 		if not self.player.running:
 			self.remove(self.item_group)
 		if my_game.scroll_map_bool:
-			self.rect.x -= 2
+			self.rect.x -= my_game.scroll_map
 		if pygame.sprite.collide_rect(self,self.player):
 			#Set timeskill
 			if self.type == 1:
@@ -200,7 +200,7 @@ class Game():
 			self.direction_scroll = 1
 		if self.scroll >= self.back_ground_image.get_width() - self.WINDOW_WIDTH:
 			self.direction_scroll = -1
-		self.scroll += self.direction_scroll * .5
+		self.scroll += self.direction_scroll * .5 * my_game.WINDOW_WIDTH * 1.0  / 1200
 		self.display_surface.blit(self.back_ground_image, (-self.scroll, 0))
 	
 	def start_new_round(self):
@@ -791,7 +791,7 @@ class Game():
 
 	def race(self):
 		self.menu_music.stop()
-		self.map_length = 3
+		self.map_length = 4
 		racing = True
 		active = False
 		user_text = u""
@@ -803,7 +803,6 @@ class Game():
 		#Set n road continous
 		map = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.png"), (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 		last_map = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.1.png"), (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-		
 		self.map_rects = []
 		for i in range(self.map_length):
 			rect = map.get_rect()
@@ -812,15 +811,15 @@ class Game():
 			else:
 				rect.topleft = (0, 0)
 			self.map_rects.append(rect)		
-		
+
 		#Set back map
 		backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 		scale = backmap.get_width() / backmap.get_height()
 		backmap = pygame.transform.scale(backmap, (self.WINDOW_HEIGHT * scale, self.WINDOW_HEIGHT))
 		backmap_rect = backmap.get_rect()
-		backmap_rect.center = self.WINDOW_WIDTH //2 , self.WINDOW_HEIGHT // 2
+		backmap_rect.center = (self.WINDOW_WIDTH //2 , self.WINDOW_HEIGHT // 2)
 		self.player_group = pygame.sprite.Group()
-		
+
 		#Item
 		item_group = pygame.sprite.Group()
 
@@ -828,22 +827,35 @@ class Game():
 		for i in range(1, 6):
 			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174,self.player_group)
 			self.player_group.add(player)
-		
+
 		#scroll variables
-		self.scroll_map = 2
+		self.scroll_map = int(2 * my_game.WINDOW_WIDTH   / 1200 * 1.0)
 		self.scroll_map_bool = True
 		
 		#count down
+
 		self.count_down()
 		self.race_music.play()
 		
+		#text box
+		text_box = self.font19.render(f'Chat: {user_text}', True, BLACK)
+		text_box_rect = text_box.get_rect()
+		text_box_rect.topleft = (int(self.WINDOW_WIDTH * 0.73), int(self.WINDOW_HEIGHT * 0.05))
+		
+		text_chat_rect = pygame.Rect(int(self.WINDOW_WIDTH * 0.73), int(self.WINDOW_HEIGHT * 0.026),
+		                             self.WINDOW_WIDTH // 4, self.WINDOW_HEIGHT // 12)  # để nhận biết nhấp chuột
+		
+		text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
+		
 		#Main loop
 		while racing:
+			print(self.time)
+			
 			#if all player get the race, show victory
 			if len(self.rank) == 5:
 				self.show_victory()
 			# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
-			if random.randint(0,1000) >= 997:
+			if random.randint(0,1000) >= 995:
 				type = random.choices([1,2,3,4,5,6], weights=[0.3, 0.3, .05 , 0.3, .001, .001])[0]
 				index = random.randint(1,7)
 				for player in self.player_group.sprites():
@@ -906,25 +918,20 @@ class Game():
 			self.frame_count+= 1
 			if self.frame_count == FPS:
 				self.time += 1
+				self.frame_count = 0
 			
 			#Show Back map
 			self.display_surface.blit(backmap, backmap_rect)
 			
 			#BOX CHAT
-			text_box = self.font19.render(f'Chat: {user_text}', True, BLACK) 
-			text_box_rect = text_box.get_rect()
-			text_box_rect.topleft = (int(self.WINDOW_WIDTH*0.73), int(self.WINDOW_HEIGHT*0.05) )
-		
-			text_chat_rect = pygame.Rect(int(self.WINDOW_WIDTH*0.73), int(self.WINDOW_HEIGHT*0.026) , self.WINDOW_WIDTH // 4 , self.WINDOW_HEIGHT // 12 ) #để nhận biết nhấp chuột
-		
-			text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
+			text_box = self.font19.render(f'Chat: {user_text}', True, BLACK) #rerender hud
 
-				#Checck color of the box
+			#Checck color of the box
 			if active:
 				color = GRAY
 			else:
 				color = BLACK
-				#update HUD
+
 			self.display_surface.blit(box_chat, ( int(self.WINDOW_WIDTH*0.7), 0) )
 			try:
 				if len(user_text) <= 22: 
@@ -955,9 +962,6 @@ class Game():
 			#BLit the item
 			item_group.update()
 			item_group.draw(self.display_surface)
-			
-			# Blit the HUD
-			self.show_HUD()
 
 			#Show chat
 			if (random.randint(0,1000) >= 998):
@@ -978,7 +982,7 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self, index, x, y, group):
 		super().__init__()
 		self.index = index
-		self.origin_speed = random.uniform(.3,.5)
+		self.origin_speed = random.uniform(.1, .3) * my_game.WINDOW_WIDTH * 1.0  / 1200
 		self.animate_fps = .3
 		self.running = True
 		self.win_absolute = False
@@ -988,9 +992,6 @@ class Player(pygame.sprite.Sprite):
 		self.origin_frame = []
 		self.speed_up_time = self.reverse_time = self.slow_down_time = 0
 
-		self.WINDOW_WIDTH = 1200
-		self.WINDOW_HEIGHT = 675		
-		self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 		
 		for i in range(9):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
@@ -1014,13 +1015,15 @@ class Player(pygame.sprite.Sprite):
 		self.origin_x = x
 		self.origin_y = y
 		self.cele = -2
-		
+		#Mui ten
+		self.mui_ten = pygame.transform.scale(pygame.image.load(f"./asset/image/mui_ten.png")
+	                                      , (int(my_game.WINDOW_WIDTH * 0.025), int(my_game.WINDOW_HEIGHT * 0.045)))
 	def skill(self):
 		#UU tien phep quay lui, neu gap quay lui xoa het phep con lai
 		if self.reverse_time > 0:
 			self.speed_up_time = self.slow_down_time = 0
 			self.reverse_time -= 1
-			self.speed = -2
+			self.speed = -2 * my_game.WINDOW_WIDTH * 1.0  / 1200
 			self.frame = self.flip_frame
 		else:
 			self.speed = self.origin_speed
@@ -1031,12 +1034,12 @@ class Player(pygame.sprite.Sprite):
 				self.speed = self.origin_speed
 		
 		elif self.speed_up_time > self.slow_down_time and self.speed_up_time > 0:
-			self.speed = self.origin_speed + 2
+			self.speed = self.origin_speed + 2 * my_game.WINDOW_WIDTH *1.0  / 1200
 			self.slow_down_time = 0
 			self.speed_up_time -= 1
 		
 		elif self.speed_up_time < self.slow_down_time and self.slow_down_time > 0:
-			self.speed = self.origin_speed - 2
+			self.speed = self.origin_speed - 2 * my_game.WINDOW_WIDTH *1.0  / 1200
 			self.slow_down_time -= 1
 			self.speed_up_time = 0
 		
@@ -1063,9 +1066,7 @@ class Player(pygame.sprite.Sprite):
 		
 		#draw mui ten
 		if self.index == my_game.bet:
-			mui_ten = pygame.transform.scale(pygame.image.load(f"./asset/image/mui_ten.png")
-		                                  , ( int(self.WINDOW_WIDTH * 0.025), int(self.WINDOW_HEIGHT * 0.045) ) )
-			self.display_surface.blit(mui_ten, ( int(self.rect.left * 0.93) - 30, int(self.rect.top)  ) )
+			my_game.display_surface.blit(self.mui_ten, ( int(self.rect.left * 0.93) - 30, int(self.rect.top)  ) )
 
 	def get_race(self):
 		#win absolute la dich chuyen thang ve dich, nen khong can ngung man hinh - > may con kia chay bthg
@@ -1079,7 +1080,7 @@ class Player(pygame.sprite.Sprite):
 				if player == self :
 					continue
 				if not player.has_boost:
-					player.origin_speed += 2
+					player.origin_speed += 2 * my_game.WINDOW_WIDTH * 1.0  / 1200
 					player.has_boost = True
 		else:
 			self.running = False
