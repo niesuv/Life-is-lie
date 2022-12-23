@@ -1,4 +1,5 @@
-﻿import pygame, random, sys, re
+﻿from turtle import window_width
+import pygame, random, sys, re
 import numpy as np
 
 # FPS and clock
@@ -11,6 +12,7 @@ BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
 RED = (255, 3, 3)
 GRAY = (80, 80, 80)
+WHITE = (255, 255, 255)
 
 # Create Display Surface(SCALE = 16 / 9)
 
@@ -115,12 +117,12 @@ class Game():
 		
 		
 		# Font
-		self.font32 = pygame.font.Font("./asset/font/font1.ttf", 32)
+		self.font32 = pygame.font.Font("./asset/font/font1.ttf", self.WINDOW_WIDTH // 32 + 1)
 		
 		#sound
 		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
 		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
-		self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.mp3")
+		self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.wav")
 		
 		# Item image
 		self.item_image = []
@@ -139,8 +141,8 @@ class Game():
 		self.rank = []
 		self.history = []
 		self.show_text_chat = u""
-		self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", 19)
-		self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", 17)
+		self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 64 + 1)
+		self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 71 + 1)
 	
 	
 	
@@ -672,6 +674,21 @@ class Game():
 			for player in self.rank:
 				player.animate(.2)
 			self.player_group.draw(self.display_surface)
+
+			#show money
+			gold_box = self.font32.render(f'GOLD: {self.gold}', True, YELLOW) 
+			gold_box_rect = gold_box.get_rect()
+			gold_box_rect.topleft = (int(self.WINDOW_WIDTH*0.03), int(self.WINDOW_HEIGHT*0.75) )
+			self.display_surface.blit(gold_box, gold_box_rect)
+
+			if self.bet == self.rank[0].index: 
+				bet_box = self.font32.render(f'+ {self.bet_money}', True, GREEN) 
+			else: 
+				bet_box = self.font32.render(f'- {self.bet_money}', True, RED) 
+			bet_box_rect = bet_box.get_rect()
+			bet_box_rect.topleft = (int(self.WINDOW_WIDTH*0.03), int(self.WINDOW_HEIGHT*0.75) + gold_box_rect.height)
+			self.display_surface.blit(bet_box, bet_box_rect)
+
 			# DRAW BUTTON
 			pygame.display.update()
 			clock.tick(FPS)
@@ -713,25 +730,18 @@ class Game():
 			pygame.display.update()
 
 	def blit_text(self, surface, text, pos, font, background_color = None, color=pygame.Color('black')):
-		words = [word.split(' ') for word in text.splitlines()]  # 2D array where each row is a list of words.
-		space = font.size(' ')[0]  # The width of a space.
-		max_width, max_height = surface.get_size()
+		if self.map == 2 or self.map == 3 or self.map == 4:
+			color = WHITE
 		x, y = pos
-		for line in words:
-			for word in line:
-				word_surface = font.render(word, 0, color, background_color)
-				word_width, word_height = word_surface.get_size()
-				if x + word_width >= max_width:
-					x = pos[0]  # Reset the x.
-					y += word_height  # Start on new row.
-				surface.blit(word_surface, (x, y))
-				x += word_width + space
-			x = pos[0]  # Reset the x.
-			y += word_height  # Start on new row.
+		for line in text.splitlines():
+			word_surface = font.render(line, 1, color, background_color) 
+			word_width, word_height = word_surface.get_size() 
+			surface.blit(word_surface, (x, y))
+			y += word_height  # Start on new row
 
 	def show_chat(self, *comments):
 		if str(comments) == "('',)": #đưa vào chuỗi rỗng
-			self.blit_text(self.display_surface, self.show_text_chat,(int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.05) ) , self.font17)
+			self.blit_text(self.display_surface, self.show_text_chat,(int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.02) ) , self.font17)
 			return 0
 		elif len(comments) > 0:
 			if self.show_text_chat.count("\n") >= 4:
@@ -759,14 +769,8 @@ class Game():
 			if self.show_text_chat.count("\n") >= 4:
 				self.show_text_chat = self.show_text_chat[self.show_text_chat.find("\n")+1 :]
 			self.show_text_chat += "Chat Bot " + str(random.randint(1, 4)) + ": " +switcher.get(temp) + "\n"
-		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) 
-		text_box_rect = text_box.get_rect()
-		text_box_rect.topleft = (int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.05) )
-		text_box_rect.centery = 0.05 * self.WINDOW_HEIGHT
 
-		text_box = self.font17.render(f'{self.show_text_chat}', True, BLACK) #update HUD
-
-		self.blit_text(self.display_surface, self.show_text_chat,(int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.05) ) , self.font17)
+		self.blit_text(self.display_surface, self.show_text_chat,(int(self.WINDOW_WIDTH*0.05), int(self.WINDOW_HEIGHT*0.02) ) , self.font17)
 
 	def remove_Vietnamese_letter(self, s):
 		s = re.sub('[áàảãạăắằẳẵặâấầẩẫậ]', 'a', s)
@@ -807,11 +811,9 @@ class Game():
 				rect.topleft = self.map_rects[i-1].topright
 			else:
 				rect.topleft = (0, 0)
-			self.map_rects.append(rect)
-		
+			self.map_rects.append(rect)		
 		
 		#Set back map
-		
 		backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 		scale = backmap.get_width() / backmap.get_height()
 		backmap = pygame.transform.scale(backmap, (self.WINDOW_HEIGHT * scale, self.WINDOW_HEIGHT))
@@ -826,7 +828,6 @@ class Game():
 		for i in range(1, 6):
 			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174,self.player_group)
 			self.player_group.add(player)
-		
 		
 		#scroll variables
 		self.scroll_map = 2
@@ -867,8 +868,8 @@ class Game():
 
 				if event.type == pygame.KEYDOWN:                  
 					if event.key == pygame.K_BACKSPACE:
-						#Go dau
-						if event.unicode.isalpha(): #dau tieng viet
+						#Go dau tieng viet
+						if event.unicode.isalpha():
 							#d + d
 							if self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 1:
 								user_text = user_text[: -1] + event.unicode
@@ -885,9 +886,10 @@ class Game():
 							elif self.remove_Vietnamese_letter(user_text).rfind(self.remove_Vietnamese_letter(event.unicode)) == len(user_text) - 5:
 								user_text = user_text[:-5] + event.unicode + user_text[-4:] * 2
 							
-							if user_text.rfind("ư") + 1 <= len(user_text) - 1:
-								if event.unicode == "ư" and user_text[user_text.rfind("ư") + 1] == "o":
-									user_text[user_text.rfind("ư") + 1] = "ơ"
+							if event.unicode == "ư" and user_text.rfind("ư") + 1 <= len(user_text) - 1:
+								if user_text[user_text.rfind("ư") + 1] == "o":
+									list(user_text)[user_text.rfind("ư") + 1] = "ơ" 
+									user_text = ''.join(user_text)
 							continue
 						else:
 							user_text = user_text[: -1]
@@ -932,11 +934,6 @@ class Game():
 				self.display_surface.blit(text_box, text_box_rect)
 			except ValueError:
 				pass
-
-			text_box_extra = self.font17.render('(đánh dấu liền kề chữ cái)', True, color) 
-			text_box_extra_rect = text_box_extra.get_rect()
-			text_box_extra_rect.topleft = (int(self.WINDOW_WIDTH*0.73), int(self.WINDOW_HEIGHT*0.07) )
-			self.display_surface.blit(text_box_extra, text_box_extra_rect)
 
 			#Scroll the road
 			for i in range(self.map_length):
@@ -990,7 +987,10 @@ class Player(pygame.sprite.Sprite):
 		self.speed = self.origin_speed
 		self.origin_frame = []
 		self.speed_up_time = self.reverse_time = self.slow_down_time = 0
-		
+
+		self.WINDOW_WIDTH = 1200
+		self.WINDOW_HEIGHT = 675		
+		self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 		
 		for i in range(9):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
@@ -1063,7 +1063,9 @@ class Player(pygame.sprite.Sprite):
 		
 		#draw mui ten
 		if self.index == my_game.bet:
-			pygame.draw.circle(my_game.display_surface,GREEN,(self.rect.centerx, self.rect.top - 10),7,0)
+			mui_ten = pygame.transform.scale(pygame.image.load(f"./asset/image/mui_ten.png")
+		                                  , ( int(self.WINDOW_WIDTH * 0.025), int(self.WINDOW_HEIGHT * 0.045) ) )
+			self.display_surface.blit(mui_ten, ( int(self.rect.left * 0.93) - 30, int(self.rect.top)  ) )
 
 	def get_race(self):
 		#win absolute la dich chuyen thang ve dich, nen khong can ngung man hinh - > may con kia chay bthg
