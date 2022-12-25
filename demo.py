@@ -108,13 +108,10 @@ class Game():
 		# display value
 		self.WINDOW_WIDTH = 1200
 		self.WINDOW_HEIGHT = 675
-		
 		self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 		
 		self.scroll = 0
 		self.direction_scroll = 1
-		self.time = 0
-		self.frame_count = 0
 		
 		# Font
 		self.font32 = pygame.font.Font("./asset/font/font1.ttf", self.WINDOW_WIDTH // 32 + 1)
