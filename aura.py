@@ -1,7 +1,8 @@
 from turtle import window_width
 import pygame, random, sys, re
 import numpy as np
-import time
+import threading
+
 
 # FPS and clock
 FPS = 60
@@ -14,8 +15,8 @@ YELLOW = (255, 255, 0)
 RED = (255, 3, 3)
 GRAY = (80, 80, 80)
 WHITE = (255, 255, 255)
-BLUE = (3, 152, 252)
-PURPLE = (130, 61, 242)
+
+
 # Create Display Surface(SCALE = 16 / 9)
 
 
@@ -84,7 +85,7 @@ class Item_skill(pygame.sprite.Sprite):
 		if pygame.sprite.collide_rect(self, self.player):
 			# Set timeskill
 			if self.type == 1:
-				self.player.speed_up_time += 45  # one second
+				self.player.speed_up_time += FPS  # one second
 			elif self.type == 2:
 				self.player.slow_down_time += FPS  # three seconds
 			elif self.type == 3:
@@ -92,25 +93,22 @@ class Item_skill(pygame.sprite.Sprite):
 				if self.player.rect.right + 150 >= my_game.map_rect.right and \
 					my_game.map_rect.right > my_game.WINDOW_WIDTH:
 					self.player.win_absolute = True
-				my_game.print_name_skill("TELEPORT",self.player.rect,PURPLE)
 			elif self.type == 4:
 				self.player.reverse_time += FPS
 			elif self.type == 5:
 				self.player.rect.right = my_game.map_rect.right
 				if my_game.map_rect.right > my_game.WINDOW_WIDTH:
 					self.player.win_absolute = True
-				my_game.print_name_skill("VICTORY!!!",self.player.rect,YELLOW)
-
 			elif self.type == 6:
 				self.player.positionx = my_game.map_rect.left
-				my_game.print_name_skill("GO HOME",self.player.rect,PURPLE)
-
 			self.remove(self.item_group)
 			my_game.collect_sound.play()
 
 
 class Game():
 	def __init__(self):
+		self.has_load_map = False
+		self.has_load_bet = False
 		# display value
 		self.WINDOW_WIDTH = 1200
 		self.WINDOW_HEIGHT = 675
@@ -122,13 +120,11 @@ class Game():
 		# Font
 		self.font32 = pygame.font.Font("./asset/font/font1.ttf", self.WINDOW_WIDTH // 32 + 1)
 		
-		
 		# sound
 		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
 		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
 		self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.wav")
 		
-	
 		# Game Value, SET in TEXT file
 		self.gold = 1000
 		self.map = 1
@@ -139,21 +135,111 @@ class Game():
 		self.show_text_chat = u""
 		self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 64 + 1)
 		self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 71 + 1)
-		# Load animation skills
-		self.boost_frame = []
-		self.slow_frame = []
-		self.tele_frame = []
-		self.reverse_frame = []
-		
-		
-		
+	
 	def main(self):
 		# Music
 		self.menu_music = pygame.mixer.Sound("./asset/music/menu_music.mp3")
 		self.menu_music.set_volume(.2)
 		self.show_main_menu()
 	
+	def load_map_set(self):
+		# load show map
+		self.map_thumbnail_images = []
+		for i in range(1, 7):
+			image = pygame.image.load(f"./asset/map/showmap{i}.png")
+			image = pygame.transform.scale(image, (int(0.271 * self.WINDOW_WIDTH), int(0.271 * self.WINDOW_HEIGHT)))
+			self.map_thumbnail_images.append(image)
+		
+		self.map_thumbnail = []
+		# Chua te hard code
+		for i in range(6):
+			if i <= 2:
+				self.map_thumbnail.append(
+					Button(int(i * (self.map_thumbnail_images[i].get_width() + 0.040 * self.WINDOW_WIDTH)
+					           + 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+					       int(0.314 * self.WINDOW_HEIGHT)
+					       , self.map_thumbnail_images[i], 1))
+			else:
+				self.map_thumbnail.append(
+					Button(int((i - 3) * (self.map_thumbnail_images[i].get_width() + 0.040 * self.WINDOW_WIDTH)
+					           + 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
+					       int((0.314 + 0.377) * self.WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
+		
+		# Load show set
+		images = []
+		for i in range(4):
+			image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
+			image = pygame.transform.scale(image,
+			                               (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
+			images.append(image)
+		self.sets_thumbnail = []
+		# Chua te hard code
+		for i in range(4):
+			if i <= 2:
+				self.sets_thumbnail.append(
+					Button(int(0.192 * self.WINDOW_WIDTH + i * (0.16 + 0.146) * self.WINDOW_WIDTH)
+					       , int(0.317 * self.WINDOW_HEIGHT), images[i], 1))
+			else:
+				self.sets_thumbnail.append(
+					Button(int(0.192 * self.WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * self.WINDOW_WIDTH)
+					       , int(0.7196 * self.WINDOW_HEIGHT), images[i], 1))
+		
+		# Load Item image
+		self.item_image = []
+		for i in range(6):
+			image = pygame.image.load(f"./asset/skill/{i + 1}.png")
+			scale = image.get_width() / image.get_height()
+			self.item_image.append(
+				pygame.transform.scale(image, (
+					int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11))))
+		
+		self.has_load_map = True
+	
+	def load_bet(self):
+		# Load betting
+		self.all_bet_thumbnail_images = []
+		for k in range(4):
+			temp = []
+			for i in range(5):
+				image = pygame.image.load(f'./asset/set/set_avt/{k + 1}{i + 1}.png')
+				scale = image.get_height() / image.get_width()
+				image = pygame.transform.scale(image,
+				                               (int(0.1525 * self.WINDOW_WIDTH),
+				                                int(0.1525 * self.WINDOW_WIDTH * scale)))
+				temp.append(image)
+			self.all_bet_thumbnail_images.append(temp)
+		self.has_load_bet = True
+	
+	def load_race(self):
+		
+		self.map_length = 3
+		# Set n road continous
+		self.road = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.png"),
+		                                   (self.WINDOW_WIDTH * self.map_length, self.WINDOW_HEIGHT))
+		self.map_rect = self.road.get_rect()
+		self.map_rect.topleft = (0, 0)
+		
+		# Set back map
+		self.backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
+		scale = self.backmap.get_width() / self.backmap.get_height()
+		self.backmap = pygame.transform.scale(self.backmap, (self.WINDOW_HEIGHT * scale, self.WINDOW_HEIGHT))
+		self.backmap_rect = self.backmap.get_rect()
+		self.backmap_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 2)
+		
+		# Add Character
+		self.player_group = pygame.sprite.Group()
+		for i in range(1, 6):
+			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
+			self.player_group.add(player)
+		self.has_load_player = True
+	
 	def show_main_menu(self):
+		if not self.has_load_map:
+			self.load_thread = threading.Thread(target=self.load_map_set)
+			self.load_thread.start()
+		if not self.has_load_bet:
+			self.load_thread2 = threading.Thread(target=self.load_bet)
+			self.load_thread2.start()
 		# Load background
 		image = pygame.image.load("./asset/image/back.webp").convert()
 		scale = int(image.get_width() / image.get_height())
@@ -205,15 +291,6 @@ class Game():
 		self.display_surface.blit(self.back_ground_image, (-self.scroll, 0))
 	
 	def start_new_round(self):
-		
-		for i in range(9):
-			# load boost frame
-			image = pygame.image.load(f"./asset/aura/tangtoc/{i + 1}.png")
-			scale = image.get_width() / image.get_height()
-			image = pygame.transform.scale(image,
-			                               (int(my_game.WINDOW_HEIGHT * 0.15 * scale),
-			                                int(my_game.WINDOW_HEIGHT * 0.15)))
-			self.boost_frame.append(image)
 		self.show_map()
 	
 	def show_setting(self):
@@ -369,8 +446,18 @@ class Game():
 			print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
 	
 	def show_bet(self):
-		#Load some font
-		self.font_skill = pygame.font.Font("./asset/font/skill_font.ttf", int(self.WINDOW_HEIGHT*0.05))
+		
+		self.load_thread.join()
+		self.load_thread2.join()
+		self.load_thread = threading.Thread(target=self.load_race)
+		self.load_thread.start()
+		# Load betting
+		self.bet_thumbnail_images = self.all_bet_thumbnail_images[self.set - 1]
+		self.bet_thumbnails = []
+		for i in range(5):
+			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH))
+			                       , int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i])
+			self.bet_thumbnails.append(thumbnail)
 		# Load Text
 		gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
 		gold_text_rect = gold_text.get_rect()
@@ -396,21 +483,6 @@ class Game():
 		image = pygame.transform.scale(image, (scale * self.WINDOW_HEIGHT * 0.1, self.WINDOW_HEIGHT * 0.1))
 		play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
 		
-		# Load thumbnail
-		bet_thumbnail_images = []
-		for i in range(5):
-			image = pygame.image.load(f'./asset/set/set_avt/{self.set}{i + 1}.png')
-			scale = image.get_height() / image.get_width()
-			image = pygame.transform.scale(image,
-			                               (int(0.1525 * self.WINDOW_WIDTH), int(0.1525 * self.WINDOW_WIDTH * scale)))
-			bet_thumbnail_images.append(image)
-		
-		bet_thumbnails = []
-		for i in range(5):
-			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH))
-			                       , int(0.195 * self.WINDOW_HEIGHT), bet_thumbnail_images[i])
-			bet_thumbnails.append(thumbnail)
-		
 		# Go back button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
@@ -425,7 +497,7 @@ class Game():
 		while betting:
 			if have_click == False:
 				for i in range(5):
-					if bet_thumbnails[i].click:
+					if self.bet_thumbnails[i].click:
 						have_click = True
 						break
 			
@@ -440,12 +512,12 @@ class Game():
 						betting = False
 					# CHeck click thumbnail
 					for i in range(5):
-						if bet_thumbnails[i].rect.collidepoint(pos):
-							bet_thumbnails[i].click = True
+						if self.bet_thumbnails[i].rect.collidepoint(pos):
+							self.bet_thumbnails[i].click = True
 							for j in range(5):
 								if j == i:
 									continue
-								bet_thumbnails[j].click = False
+								self.bet_thumbnails[j].click = False
 					# Check Click Box
 					if text_box.collidepoint(pos):
 						active = True
@@ -456,7 +528,7 @@ class Game():
 					if play_button.rect.collidepoint(pos):
 						if not error and have_click:
 							for i in range(5):
-								if bet_thumbnails[i].click == True:
+								if self.bet_thumbnails[i].click == True:
 									self.bet = i + 1
 									break
 							self.bet_money = int(user_text)
@@ -476,7 +548,7 @@ class Game():
 			self.show_back_ground()
 			# Draw character
 			for i in range(5):
-				bet_thumbnails[i].draw(self.display_surface)
+				self.bet_thumbnails[i].draw(self.display_surface)
 			# DRAW BUTTON
 			go_back_button.draw(self.display_surface)
 			play_button.draw(self.display_surface)
@@ -501,28 +573,6 @@ class Game():
 	
 	def show_map(self):
 		
-		# SET BUTTON
-		map_thumbnail_images = []
-		for i in range(1, 7):
-			image = pygame.image.load(f"./asset/map/showmap{i}.png")
-			image = pygame.transform.scale(image, (int(0.271 * self.WINDOW_WIDTH), int(0.271 * self.WINDOW_HEIGHT)))
-			map_thumbnail_images.append(image)
-		width = int(0.271 * self.WINDOW_WIDTH)
-		height = int(0.271 * self.WINDOW_HEIGHT)
-		map_thumbnail = []
-		# Chua te hard code
-		for i in range(6):
-			if i <= 2:
-				map_thumbnail.append(
-					Button(int(i * (width + 0.040 * self.WINDOW_WIDTH)
-					           + 0.051 * self.WINDOW_WIDTH + width / 2),
-					       int(0.314 * self.WINDOW_HEIGHT)
-					       , map_thumbnail_images[i], 1))
-			else:
-				map_thumbnail.append(
-					Button(int((i - 3) * (width + 0.040 * self.WINDOW_WIDTH)
-					           + 0.051 * self.WINDOW_WIDTH + width / 2),
-					       int((0.314 + 0.377) * self.WINDOW_HEIGHT), map_thumbnail_images[i], 1))
 		# GO BACK BUTTON
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
@@ -540,7 +590,7 @@ class Game():
 					pos = pygame.mouse.get_pos()
 					# Check click Map
 					for i in range(6):
-						if map_thumbnail[i].rect.collidepoint(pos):
+						if self.map_thumbnail[i].rect.collidepoint(pos):
 							self.map = i + 1
 							self.show_set()
 					if go_back_button.rect.collidepoint(pos):
@@ -549,7 +599,7 @@ class Game():
 			self.show_back_ground()
 			# DRAW BUTTON
 			for i in range(6):
-				map_thumbnail[i].draw(self.display_surface)
+				self.map_thumbnail[i].draw(self.display_surface)
 			
 			go_back_button.draw(self.display_surface)
 			pygame.display.update()
@@ -557,24 +607,6 @@ class Game():
 	
 	def show_set(self):
 		
-			
-		# Lay ra anh thumbnail
-		images = []
-		for i in range(4):
-			image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
-			image = pygame.transform.scale(image, (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
-			images.append(image)
-		self.sets_thumbnail = []
-		# Chua te hard code
-		for i in range(4):
-			if i <= 2:
-				self.sets_thumbnail.append(
-					Button(int(0.192 * self.WINDOW_WIDTH + i * (0.16 + 0.146) * self.WINDOW_WIDTH)
-					       , int(0.317 * self.WINDOW_HEIGHT), images[i], 1))
-			else:
-				self.sets_thumbnail.append(
-					Button(int(0.192 * self.WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * self.WINDOW_WIDTH)
-					       , int(0.7196 * self.WINDOW_HEIGHT), images[i], 1))
 		# Set button
 		image = pygame.image.load("./asset/button/go_back_button.png")
 		scale = image.get_width() / image.get_height()
@@ -609,6 +641,7 @@ class Game():
 			clock.tick(FPS)
 	
 	def show_victory(self):
+		self.load_thread.join()
 		self.race_music.stop()
 		show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
 		show_vic_music.play(-1)
@@ -715,7 +748,6 @@ class Game():
 		pass
 	
 	def count_down(self):
-		
 		num3_image = pygame.transform.scale(pygame.image.load("./asset/image/num3.png"),
 		                                    (self.WINDOW_WIDTH // 2, self.WINDOW_WIDTH // 2))
 		num2_image = pygame.transform.scale(pygame.image.load("./asset/image/num2.png"),
@@ -814,20 +846,12 @@ class Game():
 		s = re.sub('Đ', 'D', s)
 		return s
 	
-	def print_name_skill(self, text, rect, color):
-		text = self.font_skill.render(text,True, color)
-		text_box = text.get_rect()
-		text_box.centerx = rect.centerx
-		text_box.bottom = rect.top
-		my_game.display_surface.blit(text,text_box)
-		
 	def race(self):
-
 		# time
 		self.time = 0
 		self.frame_count = 0
 		self.menu_music.stop()
-		self.map_length = 4
+		self.map_length = 3
 		# text variable
 		racing = True
 		active = False
@@ -837,27 +861,8 @@ class Game():
 		box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png")
 		                                  , (int(self.WINDOW_WIDTH * 0.3), int(self.WINDOW_HEIGHT * 0.15)))
 		
-		# Set n road continous
-		map = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.png"),
-		                             (self.WINDOW_WIDTH * self.map_length, self.WINDOW_HEIGHT))
-		self.map_rect = map.get_rect()
-		self.map_rect.topleft = (0, 0)
-		
-		# Set back map
-		backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
-		scale = backmap.get_width() / backmap.get_height()
-		backmap = pygame.transform.scale(backmap, (self.WINDOW_HEIGHT * scale, self.WINDOW_HEIGHT))
-		backmap_rect = backmap.get_rect()
-		backmap_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 2)
-		self.player_group = pygame.sprite.Group()
-		
 		# Item
 		item_group = pygame.sprite.Group()
-		
-		# Add Character
-		for i in range(1, 6):
-			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
-			self.player_group.add(player)
 		
 		# scroll variables
 		self.scroll_map = int(2 * my_game.WINDOW_WIDTH / 1200 * 1.0)
@@ -877,8 +882,7 @@ class Game():
 		                             self.WINDOW_WIDTH // 4, self.WINDOW_HEIGHT // 12)  # để nhận biết nhấp chuột
 		
 		text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
-		lucky_box = pygame.image.load("./asset/image/lucky_box.png")
-		lucky_box = pygame.transform.scale(lucky_box,(self.WINDOW_HEIGHT*0.11,self.WINDOW_HEIGHT*0.11))
+		
 		# Main loop
 		while racing:
 			print(self.time)
@@ -886,16 +890,15 @@ class Game():
 			if len(self.rank) == 5:
 				self.show_victory()
 			# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
-			if random.randint(0, 1000) >= 970:
-				#type = random.choices([1, 2, 3, 4, 5, 6], weights=[0.3, 0.3, .05, 0.3, .001, .001])[0]
-				type = 3
+			if random.randint(0, 1000) >= 995:
+				type = random.choices([1, 2, 3, 4, 5, 6], weights=[0.3, 0.3, .05, 0.3, .001, .001])[0]
 				index = random.randint(1, 7)
 				for player in self.player_group.sprites():
 					if player.index == index:
 						if player.running == False:
 							break
 						else:
-							item = Item_skill(type, index, lucky_box, item_group, player)
+							item = Item_skill(type, index, self.item_image[type - 1], item_group, player)
 							item_group.add(item)
 			
 			for event in pygame.event.get():
@@ -958,7 +961,7 @@ class Game():
 				self.frame_count = 0
 			
 			# Show Back map
-			self.display_surface.blit(backmap, backmap_rect)
+			self.display_surface.blit(self.backmap, self.backmap_rect)
 			
 			# BOX CHAT
 			text_box = self.font19.render(f'Chat: {user_text}', True, BLACK)  # rerender hud
@@ -984,7 +987,7 @@ class Game():
 				self.map_rect.x -= self.scroll_map
 			
 			# Blit the road
-			self.display_surface.blit(map, self.map_rect)
+			self.display_surface.blit(self.road, self.map_rect)
 			
 			# Run the player
 			self.player_group.update()
@@ -1022,7 +1025,6 @@ class Player(pygame.sprite.Sprite):
 		self.speed = self.origin_speed
 		self.origin_frame = []
 		self.speed_up_time = self.reverse_time = self.slow_down_time = 0
-		self.skill_current_frame = 0
 		
 		for i in range(9):
 			image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
@@ -1058,8 +1060,6 @@ class Player(pygame.sprite.Sprite):
 			self.reverse_time -= 1
 			self.speed = -2 * my_game.WINDOW_WIDTH * 1.0 / 1200
 			self.frame = self.flip_frame
-			my_game.print_name_skill("REVERSE",self.rect,BLUE)
-			
 		else:
 			self.speed = self.origin_speed
 			self.frame = self.origin_frame
@@ -1072,15 +1072,11 @@ class Player(pygame.sprite.Sprite):
 			self.speed = self.origin_speed + 2 * my_game.WINDOW_WIDTH * 1.0 / 1200
 			self.slow_down_time = 0
 			self.speed_up_time -= 1
-			my_game.print_name_skill("SPEED UP",self.rect,GREEN)
-
 		
 		elif self.speed_up_time < self.slow_down_time and self.slow_down_time > 0:
 			self.speed = self.origin_speed - 2 * my_game.WINDOW_WIDTH * 1.0 / 1200
 			self.slow_down_time -= 1
 			self.speed_up_time = 0
-			my_game.print_name_skill("SLOW DOWN",self.rect,RED)
-
 	
 	def update(self):
 		self.skill()

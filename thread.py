@@ -107,11 +107,14 @@ class Item_skill(pygame.sprite.Sprite):
 
 class Game():
 	def __init__(self):
+		self.has_load_map = False
+		self.has_load_bet = False
+		self.has_load_set = False
 		# display value
 		self.WINDOW_WIDTH = 1200
 		self.WINDOW_HEIGHT = 675
 		self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-		
+	
 		self.scroll = 0
 		self.direction_scroll = 1
 		
@@ -123,13 +126,7 @@ class Game():
 		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
 		self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.wav")
 		
-		# Item image
-		self.item_image = []
-		for i in range(6):
-			image = pygame.image.load(f"./asset/skill/{i + 1}.png")
-			scale = image.get_width() / image.get_height()
-			self.item_image.append(
-				pygame.transform.scale(image, (int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11))))
+		
 		
 		# Game Value, SET in TEXT file
 		self.gold = 1000
@@ -148,7 +145,7 @@ class Game():
 		self.menu_music.set_volume(.2)
 		self.show_main_menu()
 	
-	def load(self):
+	def load_map(self):
 		#load show map
 		self.map_thumbnail_images = []
 		for i in range(1, 7):
@@ -170,17 +167,21 @@ class Game():
 					Button(int((i - 3) * (self.map_thumbnail_images[i].get_width() + 0.040 * self.WINDOW_WIDTH)
 					           + 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
 					       int((0.314 + 0.377) * self.WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
-				
+		self.has_load_map = True
+
+
+	def load_set(self):
 		#Load show set
 		images = []
-		for i in range(4):
+		for i in range(5):
 			image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
 			image = pygame.transform.scale(image,
 			                               (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
 			images.append(image)
+			
 		self.sets_thumbnail = []
 		# Chua te hard code
-		for i in range(4):
+		for i in range(5):
 			if i <= 2:
 				self.sets_thumbnail.append(
 					Button(int(0.192 * self.WINDOW_WIDTH + i * (0.16 + 0.146) * self.WINDOW_WIDTH)
@@ -189,28 +190,32 @@ class Game():
 				self.sets_thumbnail.append(
 					Button(int(0.192 * self.WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * self.WINDOW_WIDTH)
 					       , int(0.7196 * self.WINDOW_HEIGHT), images[i], 1))
+				
+		# Load Item image
+		image = pygame.image.load("./asset/image/lucky_box.png")
+		scale = image.get_width() / image.get_height()
+		self.item_image = pygame.transform.scale(image, (
+				int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11)))
+		self.has_load_set = True
 
-	
+	def load_bet(self):
 		# Load betting
-		self.bet_thumbnail_images = []
-		for i in range(5):
-			image = pygame.image.load(f'./asset/set/set_avt/{self.set}{i + 1}.png')
-			scale = image.get_height() / image.get_width()
-			image = pygame.transform.scale(image,
-			                               (int(0.1525 * self.WINDOW_WIDTH),
-			                                int(0.1525 * self.WINDOW_WIDTH * scale)))
-			self.bet_thumbnail_images.append(image)
+		self.all_bet_thumbnail_images = []
+		for k in range(5):
+			temp = []
+			for i in range(5):
+				image = pygame.image.load(f'./asset/set/set_avt/{k+1}{i + 1}.png')
+				scale = image.get_height() / image.get_width()
+				image = pygame.transform.scale(image,
+				                               (int(0.1525 * self.WINDOW_WIDTH),
+				                                int(0.1525 * self.WINDOW_WIDTH * scale)))
+				temp.append(image)
+			self.all_bet_thumbnail_images.append(temp)
+		self.has_load_bet = True
 		
-		self.bet_thumbnails = []
-		for i in range(5):
-			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH))
-			                       , int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i])
-			self.bet_thumbnails.append(thumbnail)
+	def load_race(self):
 		
-		#Load game
-	def load2(self):
-		
-		self.map_length = 3
+		self.map_length = 4
 		# Set n road continous
 		self.road = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.png"),
 		                                   (self.WINDOW_WIDTH * self.map_length, self.WINDOW_HEIGHT))
@@ -229,10 +234,17 @@ class Game():
 		for i in range(1, 6):
 			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
 			self.player_group.add(player)
-		
+		self.has_load_player = True
 	def show_main_menu(self):
-		self.load_thread = threading.Thread(target=self.load)
-		self.load_thread.start()
+		if not self.has_load_map:
+			self.load_map_thread = threading.Thread(target=self.load_map)
+			self.load_map_thread.start()
+		if not self.has_load_set:
+			self.load_set_thread = threading.Thread(target=self.load_set)
+			self.load_set_thread.start()
+		if not self.has_load_bet:
+			self.load_bet_thread = threading.Thread(target=self.load_bet)
+			self.load_bet_thread.start()
 		# Load background
 		image = pygame.image.load("./asset/image/back.webp").convert()
 		scale = int(image.get_width() / image.get_height())
@@ -265,7 +277,8 @@ class Game():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					pos = pygame.mouse.get_pos()
 					if start_button.rect.collidepoint(pos):
-						self.start_new_round()
+						if self.has_load_map:
+							self.start_new_round()
 					
 					if setting_button.rect.collidepoint(pos):
 						self.show_setting()
@@ -361,18 +374,27 @@ class Game():
 						self.WINDOW_WIDTH = 600
 						self.WINDOW_HEIGHT = 337
 						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.has_load_bet = False
+						self.has_load_map = False
+						self.has_load_set = False
 						self.show_main_menu()
 					
 					if btn_800x450.rect.collidepoint(pos):
 						self.WINDOW_WIDTH = 800
 						self.WINDOW_HEIGHT = 450
 						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.has_load_bet = False
+						self.has_load_map = False
+						self.has_load_set = False
 						self.show_main_menu()
 					
 					if btn_1200x675.rect.collidepoint(pos):
 						self.WINDOW_WIDTH = 1200
 						self.WINDOW_HEIGHT = 675
 						self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+						self.has_load_bet = False
+						self.has_load_map = False
+						self.has_load_set = False
 						self.show_main_menu()
 			self.show_back_ground()
 			# DRAW BUTTON
@@ -439,9 +461,15 @@ class Game():
 			print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
 	
 	def show_bet(self):
-		self.load_thread.join()
-		self.load_thread = threading.Thread(target=self.load2)
-		self.load_thread.start()
+		self.load_race_thread = threading.Thread(target=self.load_race)
+		self.load_race_thread.start()
+		# Load betting
+		self.bet_thumbnail_images = self.all_bet_thumbnail_images[self.set - 1]
+		self.bet_thumbnails = []
+		for i in range(5):
+			thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH))
+			                       , int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i])
+			self.bet_thumbnails.append(thumbnail)
 		# Load Text
 		gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
 		gold_text_rect = gold_text.get_rect()
@@ -614,20 +642,20 @@ class Game():
 					if go_back_button.rect.collidepoint(pos):
 						chosing_set = False
 					# Check chosing set
-					for i in range(4):
+					for i in range(5):
 						if self.sets_thumbnail[i].rect.collidepoint(pos):
 							self.set = i + 1
 							self.show_bet()
 			self.show_back_ground()
 			# DRAW BUTTON
-			for i in range(4):
+			for i in range(5):
 				self.sets_thumbnail[i].draw(self.display_surface)
 			go_back_button.draw(self.display_surface)
 			pygame.display.update()
 			clock.tick(FPS)
 	
 	def show_victory(self):
-		self.load_thread.join()
+		self.load_race_thread.join()
 		self.race_music.stop()
 		show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
 		show_vic_music.play(-1)
@@ -837,7 +865,6 @@ class Game():
 		self.time = 0
 		self.frame_count = 0
 		self.menu_music.stop()
-		self.map_length = 3
 		# text variable
 		racing = True
 		active = False
@@ -886,7 +913,7 @@ class Game():
 						if player.running == False:
 							break
 						else:
-							item = Item_skill(type, index, self.item_image[type - 1], item_group, player)
+							item = Item_skill(type, index, self.item_image, item_group, player)
 							item_group.add(item)
 			
 			for event in pygame.event.get():
