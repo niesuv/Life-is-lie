@@ -3,7 +3,6 @@ import pygame, random, sys, re
 import numpy as np
 import threading
 
-
 # FPS and clock
 FPS = 60
 clock = pygame.time.Clock()
@@ -29,11 +28,13 @@ class Button():
 		self.rect.center = (x, y)
 		self.pos_unhover = (x, y)
 		self.pos_hover = (x, y - 3)
+		self.origin_rect = self.image.get_rect()
+		self.origin_rect.center = (x, y)
 	
 	def draw(self, surface):
 		surface.blit(self.image, self.rect)
 		pos = pygame.mouse.get_pos()
-		if self.rect.collidepoint(pos):
+		if self.origin_rect.collidepoint(pos):
 			self.rect.center = self.pos_hover
 		else:
 			self.rect.center = self.pos_unhover
@@ -49,11 +50,13 @@ class Thumb_nail():
 		self.pos_unhover = (x, y)
 		self.pos_hover = (x, y + 30)
 		self.click = False
+		self.origin_rect = self.image.get_rect()
+		self.origin_rect.center = (x, y)
 	
 	def draw(self, surface):
 		surface.blit(self.image, self.rect)
 		pos = pygame.mouse.get_pos()
-		if self.rect.collidepoint(pos) or self.click:
+		if self.origin_rect.collidepoint(pos) or self.click:
 			self.rect.center = self.pos_hover
 		else:
 			self.rect.center = self.pos_unhover
@@ -114,7 +117,7 @@ class Game():
 		self.WINDOW_WIDTH = 1200
 		self.WINDOW_HEIGHT = 675
 		self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-	
+		
 		self.scroll = 0
 		self.direction_scroll = 1
 		
@@ -125,8 +128,6 @@ class Game():
 		self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
 		self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
 		self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.wav")
-		
-		
 		
 		# Game Value, SET in TEXT file
 		self.gold = 1000
@@ -146,7 +147,7 @@ class Game():
 		self.show_main_menu()
 	
 	def load_map(self):
-		#load show map
+		# load show map
 		self.map_thumbnail_images = []
 		for i in range(1, 7):
 			image = pygame.image.load(f"./asset/map/showmap{i}.png")
@@ -168,17 +169,16 @@ class Game():
 					           + 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
 					       int((0.314 + 0.377) * self.WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
 		self.has_load_map = True
-
-
+	
 	def load_set(self):
-		#Load show set
+		# Load show set
 		images = []
 		for i in range(5):
 			image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
 			image = pygame.transform.scale(image,
 			                               (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
 			images.append(image)
-			
+		
 		self.sets_thumbnail = []
 		# Chua te hard code
 		for i in range(5):
@@ -190,21 +190,21 @@ class Game():
 				self.sets_thumbnail.append(
 					Button(int(0.192 * self.WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * self.WINDOW_WIDTH)
 					       , int(0.7196 * self.WINDOW_HEIGHT), images[i], 1))
-				
+		
 		# Load Item image
 		image = pygame.image.load("./asset/image/lucky_box.png")
 		scale = image.get_width() / image.get_height()
 		self.item_image = pygame.transform.scale(image, (
-				int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11)))
+			int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11)))
 		self.has_load_set = True
-
+	
 	def load_bet(self):
 		# Load betting
 		self.all_bet_thumbnail_images = []
 		for k in range(5):
 			temp = []
 			for i in range(5):
-				image = pygame.image.load(f'./asset/set/set_avt/{k+1}{i + 1}.png')
+				image = pygame.image.load(f'./asset/set/set_avt/{k + 1}{i + 1}.png')
 				scale = image.get_height() / image.get_width()
 				image = pygame.transform.scale(image,
 				                               (int(0.1525 * self.WINDOW_WIDTH),
@@ -212,7 +212,7 @@ class Game():
 				temp.append(image)
 			self.all_bet_thumbnail_images.append(temp)
 		self.has_load_bet = True
-		
+	
 	def load_race(self):
 		
 		self.map_length = 4
@@ -235,6 +235,7 @@ class Game():
 			player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
 			self.player_group.add(player)
 		self.has_load_player = True
+	
 	def show_main_menu(self):
 		if not self.has_load_map:
 			self.load_map_thread = threading.Thread(target=self.load_map)
@@ -494,8 +495,6 @@ class Game():
 		scale = image.get_width() / image.get_height()
 		image = pygame.transform.scale(image, (scale * self.WINDOW_HEIGHT * 0.1, self.WINDOW_HEIGHT * 0.1))
 		play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
-		
-		
 		
 		# Go back button
 		image = pygame.image.load("./asset/button/go_back_button.png")
@@ -874,10 +873,8 @@ class Game():
 		box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png")
 		                                  , (int(self.WINDOW_WIDTH * 0.3), int(self.WINDOW_HEIGHT * 0.15)))
 		
-		
 		# Item
 		item_group = pygame.sprite.Group()
-		
 		
 		# scroll variables
 		self.scroll_map = int(2 * my_game.WINDOW_WIDTH / 1200 * 1.0)
