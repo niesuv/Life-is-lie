@@ -170,7 +170,7 @@ def game_frame():
 
 
 	class Game():
-		def __init__(self):
+		def __init__(self, gold, history):
 			self.has_load_map = False
 			self.has_load_bet = False
 			self.has_load_set = False
@@ -192,12 +192,12 @@ def game_frame():
 			self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.wav")
 			
 			# Game Value, SET in TEXT file
-			self.gold = 1000
+			self.gold = gold
 			self.map = 1
 			self.set = 1
 			self.bet = 1
 			self.rank = []
-			self.history = []
+			self.history = history
 			self.show_text_chat = u""
 			self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 64 + 1)
 			self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 71 + 1)
@@ -750,6 +750,21 @@ def game_frame():
 				clock.tick(FPS)
 		
 		def show_victory(self):
+			# cong tien
+			if self.bet == self.rank[0].index:
+				self.gold += self.bet_money
+				sign = 1
+			else:
+				self.gold -= self.bet_money
+				sign = -1
+				
+				
+			#data variable-Save vo data nhe (self.gold, self.history)
+			if len(self.history) >= 5:
+				self.history.pop()
+			self.history.insert(0,  [self.bet, self.map, sign * self.bet_money])
+
+			
 			self.load_race_thread.join()
 			self.race_music.stop()
 			show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
@@ -804,11 +819,7 @@ def game_frame():
 			player.rect.bottom = 0.5 * self.WINDOW_HEIGHT
 			player.rect.centerx = 0.15 * self.WINDOW_WIDTH
 			
-			# cong tien
-			if self.bet == self.rank[0].index:
-				self.gold += self.bet_money
-			else:
-				self.gold -= self.bet_money
+			
 			
 			showing = True
 			while showing:
@@ -1266,7 +1277,7 @@ def game_frame():
 
 
 	pygame.init()
-	my_game = Game()
+	my_game = Game(gold, history)
 	my_game.main()
 
 # --------------------------------------------------------------------------------
