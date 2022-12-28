@@ -1,7 +1,6 @@
 from turtle import window_width
-import pygame, random, sys, re
+import pygame, random, sys, re, time, threading
 import numpy as np
-import threading
 import tkinter as tk
 
 userdata = []
@@ -73,6 +72,7 @@ WHITE = (255, 255, 255)
 def game_frame():
 	# Create Display Surface(SCALE = 16 / 9)
 
+
 	class Button():
 		def __init__(self, x, y, image, scale):
 			width = image.get_width()
@@ -82,11 +82,13 @@ def game_frame():
 			self.rect.center = (x, y)
 			self.pos_unhover = (x, y)
 			self.pos_hover = (x, y - 3)
+			self.origin_rect = self.image.get_rect()
+			self.origin_rect.center = (x, y)
 		
 		def draw(self, surface):
 			surface.blit(self.image, self.rect)
 			pos = pygame.mouse.get_pos()
-			if self.rect.collidepoint(pos):
+			if self.origin_rect.collidepoint(pos):
 				self.rect.center = self.pos_hover
 			else:
 				self.rect.center = self.pos_unhover
@@ -102,11 +104,13 @@ def game_frame():
 			self.pos_unhover = (x, y)
 			self.pos_hover = (x, y + 30)
 			self.click = False
+			self.origin_rect = self.image.get_rect()
+			self.origin_rect.center = (x, y)
 		
 		def draw(self, surface):
 			surface.blit(self.image, self.rect)
 			pos = pygame.mouse.get_pos()
-			if self.rect.collidepoint(pos) or self.click:
+			if self.origin_rect.collidepoint(pos) or self.click:
 				self.rect.center = self.pos_hover
 			else:
 				self.rect.center = self.pos_unhover
@@ -142,18 +146,25 @@ def game_frame():
 				elif self.type == 2:
 					self.player.slow_down_time += FPS  # three seconds
 				elif self.type == 3:
-					self.player.positionx += 150  # tele300 pixel
+					self.player.positionx += 150  #
 					if self.player.rect.right + 150 >= my_game.map_rect.right and \
 						my_game.map_rect.right > my_game.WINDOW_WIDTH:
 						self.player.win_absolute = True
+					self.player.pos_tele = self.player.rect.topleft
+					self.player.tele_frame = 5
 				elif self.type == 4:
 					self.player.reverse_time += FPS
 				elif self.type == 5:
+					self.player.pos_tele = self.player.rect.topleft
+					self.player.tele_frame = 5
 					self.player.rect.right = my_game.map_rect.right
 					if my_game.map_rect.right > my_game.WINDOW_WIDTH:
 						self.player.win_absolute = True
+					
 				elif self.type == 6:
 					self.player.positionx = my_game.map_rect.left
+					self.player.pos_tele = self.player.rect.topleft
+					self.player.tele_frame = 5
 				self.remove(self.item_group)
 				my_game.collect_sound.play()
 
@@ -163,11 +174,12 @@ def game_frame():
 			self.has_load_map = False
 			self.has_load_bet = False
 			self.has_load_set = False
+			self.has_load_skill = False
 			# display value
 			self.WINDOW_WIDTH = 1200
 			self.WINDOW_HEIGHT = 675
 			self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-		
+			
 			self.scroll = 0
 			self.direction_scroll = 1
 			
@@ -178,8 +190,6 @@ def game_frame():
 			self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
 			self.race_music = pygame.mixer.Sound("./asset/music/race_music.mp3")
 			self.yeah_sound = pygame.mixer.Sound("./asset/music/yeah.wav")
-			
-			
 			
 			# Game Value, SET in TEXT file
 			self.gold = 1000
@@ -199,7 +209,7 @@ def game_frame():
 			self.show_main_menu()
 		
 		def load_map(self):
-			#load show map
+			# load show map
 			self.map_thumbnail_images = []
 			for i in range(1, 7):
 				image = pygame.image.load(f"./asset/map/showmap{i}.png")
@@ -221,17 +231,16 @@ def game_frame():
 								+ 0.051 * self.WINDOW_WIDTH + self.map_thumbnail_images[i].get_width() / 2),
 							int((0.314 + 0.377) * self.WINDOW_HEIGHT), self.map_thumbnail_images[i], 1))
 			self.has_load_map = True
-
-
+		
 		def load_set(self):
-			#Load show set
+			# Load show set
 			images = []
 			for i in range(5):
 				image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
 				image = pygame.transform.scale(image,
 											(int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
 				images.append(image)
-				
+			
 			self.sets_thumbnail = []
 			# Chua te hard code
 			for i in range(5):
@@ -243,21 +252,21 @@ def game_frame():
 					self.sets_thumbnail.append(
 						Button(int(0.192 * self.WINDOW_WIDTH + (i - 3) * (0.16 + 0.146) * self.WINDOW_WIDTH)
 							, int(0.7196 * self.WINDOW_HEIGHT), images[i], 1))
-					
+			
 			# Load Item image
 			image = pygame.image.load("./asset/image/lucky_box.png")
 			scale = image.get_width() / image.get_height()
 			self.item_image = pygame.transform.scale(image, (
-					int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11)))
+				int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11)))
 			self.has_load_set = True
-
+		
 		def load_bet(self):
 			# Load betting
 			self.all_bet_thumbnail_images = []
 			for k in range(5):
 				temp = []
 				for i in range(5):
-					image = pygame.image.load(f'./asset/set/set_avt/{k+1}{i + 1}.png')
+					image = pygame.image.load(f'./asset/set/set_avt/{k + 1}{i + 1}.png')
 					scale = image.get_height() / image.get_width()
 					image = pygame.transform.scale(image,
 												(int(0.1525 * self.WINDOW_WIDTH),
@@ -265,7 +274,38 @@ def game_frame():
 					temp.append(image)
 				self.all_bet_thumbnail_images.append(temp)
 			self.has_load_bet = True
+		
+		def load_skill(self):
+			self.speed_up_frame = []
+			for i in range(8):
+				image = pygame.image.load(f"./asset/effectskill/speedup/{i+1}.png")
+				scale = image.get_width() / image.get_height()
+				image = pygame.transform.scale(image , (self.WINDOW_HEIGHT * 0.3 * scale, self.WINDOW_HEIGHT * 0.11))
+				self.speed_up_frame.append(image)
 			
+			self.slow_down_frame = []
+			for i in range(8):
+				image = pygame.image.load(f"./asset/effectskill/speeddown/{i + 1}.png")
+				scale = image.get_width() / image.get_height()
+				image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.3 * scale, self.WINDOW_HEIGHT * 0.11))
+				self.slow_down_frame.append(image)
+			
+			self.reverse_frame = []
+			for i in range(9):
+				image = pygame.image.load(f"./asset/effectskill/return/{i + 1}.png")
+				scale = image.get_width() / image.get_height()
+				image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.3 * scale, self.WINDOW_HEIGHT * 0.11))
+				self.reverse_frame.append(image)
+				
+			self.tele_frame = []
+			for i in range(5):
+				image = pygame.image.load(f"./asset/effectskill/teleport/{i + 1}.png")
+				scale = image.get_width() / image.get_height()
+				image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.2 * scale, self.WINDOW_HEIGHT * 0.11))
+				self.tele_frame.append(image)
+				
+			#finish
+			self.has_load_skill = True
 		def load_race(self):
 			
 			self.map_length = 4
@@ -288,6 +328,7 @@ def game_frame():
 				player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
 				self.player_group.add(player)
 			self.has_load_player = True
+		
 		def show_main_menu(self):
 			if not self.has_load_map:
 				self.load_map_thread = threading.Thread(target=self.load_map)
@@ -298,6 +339,9 @@ def game_frame():
 			if not self.has_load_bet:
 				self.load_bet_thread = threading.Thread(target=self.load_bet)
 				self.load_bet_thread.start()
+			if not self.has_load_skill:
+				self.load_skill_thread = threading.Thread(target=self.load_skill)
+				self.load_skill_thread.start()
 			# Load background
 			image = pygame.image.load("./asset/image/back.webp").convert()
 			scale = int(image.get_width() / image.get_height())
@@ -547,8 +591,6 @@ def game_frame():
 			scale = image.get_width() / image.get_height()
 			image = pygame.transform.scale(image, (scale * self.WINDOW_HEIGHT * 0.1, self.WINDOW_HEIGHT * 0.1))
 			play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
-			
-			
 			
 			# Go back button
 			image = pygame.image.load("./asset/button/go_back_button.png")
@@ -913,6 +955,7 @@ def game_frame():
 			s = re.sub('Đ', 'D', s)
 			return s
 		
+		
 		def race(self):
 			# time
 			self.time = 0
@@ -927,10 +970,8 @@ def game_frame():
 			box_chat = pygame.transform.scale(pygame.image.load(f"./asset/image/box_chat.png")
 											, (int(self.WINDOW_WIDTH * 0.3), int(self.WINDOW_HEIGHT * 0.15)))
 			
-			
 			# Item
 			item_group = pygame.sprite.Group()
-			
 			
 			# scroll variables
 			self.scroll_map = int(2 * my_game.WINDOW_WIDTH / 1200 * 1.0)
@@ -950,7 +991,7 @@ def game_frame():
 										self.WINDOW_WIDTH // 4, self.WINDOW_HEIGHT // 12)  # để nhận biết nhấp chuột
 			
 			text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
-			
+			self.list_choice = [1,2,3,4,5]
 			# Main loop
 			while racing:
 				print(self.time)
@@ -960,7 +1001,11 @@ def game_frame():
 				# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
 				if random.randint(0, 1000) >= 995:
 					type = random.choices([1, 2, 3, 4, 5, 6], weights=[0.3, 0.3, .05, 0.3, .001, .001])[0]
-					index = random.randint(1, 7)
+					if len(self.list_choice)  == 0:
+						self.list_choice = [1,2,3,4,5]
+					random.shuffle(self.list_choice)
+					index = self.list_choice.pop()
+
 					for player in self.player_group.sprites():
 						if player.index == index:
 							if player.running == False:
@@ -1094,6 +1139,7 @@ def game_frame():
 			self.origin_frame = []
 			self.speed_up_time = self.reverse_time = self.slow_down_time = 0
 			
+			
 			for i in range(9):
 				image = pygame.image.load(f"./asset/set/set{my_game.set}/{self.index}/{i + 1}.png")
 				scale = image.get_width() / image.get_height()
@@ -1112,6 +1158,9 @@ def game_frame():
 			self.rect.bottomleft = (x, y)
 			self.positionx = x
 			
+			#tele variable
+			self.pos_tele = (0, 0)
+			self.tele_frame = 0
 			# variable for celebartion
 			self.is_cele = False
 			self.origin_x = x
@@ -1128,6 +1177,7 @@ def game_frame():
 				self.reverse_time -= 1
 				self.speed = -2 * my_game.WINDOW_WIDTH * 1.0 / 1200
 				self.frame = self.flip_frame
+				my_game.display_surface.blit(my_game.reverse_frame[int(self.current_frame)],self.rect.topleft)
 			else:
 				self.speed = self.origin_speed
 				self.frame = self.origin_frame
@@ -1140,12 +1190,21 @@ def game_frame():
 				self.speed = self.origin_speed + 2 * my_game.WINDOW_WIDTH * 1.0 / 1200
 				self.slow_down_time = 0
 				self.speed_up_time -= 1
+				my_game.display_surface.blit(my_game.speed_up_frame[int(abs(self.current_frame-1))]
+											,self.rect.topleft)
+
 			
 			elif self.speed_up_time < self.slow_down_time and self.slow_down_time > 0:
 				self.speed = self.origin_speed - 2 * my_game.WINDOW_WIDTH * 1.0 / 1200
 				self.slow_down_time -= 1
 				self.speed_up_time = 0
-		
+				my_game.display_surface.blit(my_game.slow_down_frame[int(abs(self.current_frame - 1))]
+											, self.rect.topleft)
+			
+			if self.tele_frame > 0:
+				my_game.display_surface.blit(my_game.tele_frame[int(5 - self.tele_frame)]
+											, self.pos_tele)
+				self.tele_frame -= .2
 		def update(self):
 			self.skill()
 			if self.is_cele:
@@ -1204,7 +1263,8 @@ def game_frame():
 			if self.rect.bottom <= self.origin_y - 40:
 				if self.cele < 0:
 					self.cele *= -1
-		
+
+
 	pygame.init()
 	my_game = Game()
 	my_game.main()
