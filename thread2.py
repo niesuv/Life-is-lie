@@ -21,13 +21,19 @@ def trans_list(data):
 	global userdata
 	for line in data:
 		number = 0
+		negative = False
 		tmp = []
-		for i in range(0, len(line) - 1):
-			if line[i] == '[': 
-				continue
-			if line[i] == ' ' or line[i] == ']':
+		for i in range(0, len(line)):
+			if line[i] == '\n':
+				break
+			if line[i] == ' ':
+				if negative:
+					number = -number
+					negative = False
 				tmp.append(number)
 				number = 0
+			elif line[i] == '-':
+				negative = True
 			else: 
 				number = number * 10 + int(line[i])
 		userdata.append(tmp)
@@ -68,6 +74,40 @@ YELLOW = (255, 255, 0)
 RED = (255, 3, 3)
 GRAY = (80, 80, 80)
 WHITE = (255, 255, 255)
+
+play = None
+pos = int()
+gold = int()
+history = []
+
+# --------------------------------------------------------------------------------
+
+def get_data_playing():
+	global userdata, pos, gold, history
+	
+	if (len(userdata[pos]) < 5):
+		gold = 1000
+		return
+	gold = userdata[pos][3]
+	for i in range(4, len(userdata[pos]), 3):
+		tmp = [userdata[pos][i], userdata[pos][i + 1], userdata[pos][i + 2]]
+		history.append(tmp)
+
+def save_data_playing():
+	global userdata, pos, gold, history
+
+	while (len(userdata[pos]) + len(history) > 9):
+		userdata[pos].pop()
+	if len(userdata[pos]) < 4:
+		userdata[pos].append(gold)
+	else: 
+		userdata[pos][3] = gold
+	for i in range(len(history) - 1, -1, -1):
+		userdata[pos].insert(4, history[i][2])
+		userdata[pos].insert(4, history[i][1])
+		userdata[pos].insert(4, history[i][0])
+	
+	trans_str()
 
 def game_frame():
 	# Create Display Surface(SCALE = 16 / 9)
@@ -763,6 +803,10 @@ def game_frame():
 			if len(self.history) >= 5:
 				self.history.pop()
 			self.history.insert(0,  [self.bet, self.map, sign * self.bet_money])
+			global gold, history
+			gold = self.gold
+			history = self.history
+			save_data_playing()
 
 			
 			self.load_race_thread.join()
@@ -1275,14 +1319,12 @@ def game_frame():
 				if self.cele < 0:
 					self.cele *= -1
 
-
+	global gold, history
 	pygame.init()
 	my_game = Game(gold, history)
 	my_game.main()
 
 # --------------------------------------------------------------------------------
-
-play = None
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 675
@@ -1299,7 +1341,13 @@ hide = tk.PhotoImage(file="./asset/image/hide.png")
 
 # --------------------------------------------------------------------------------
 
-def change_frame(src, des):
+def delete_errors(*error):
+	for tmp in error:
+		tmp.grid_forget()
+
+def change_frame(src, des, *text):
+	for tmp in text:
+		tmp.delete(0, "end")
 	src.forget()
 	des.pack(side="right")
 
@@ -1422,7 +1470,11 @@ class signup():
 			font=("Calibri", 13, "italic underline"), 
 			bd=0, 
 			cursor="hand2", 
-			command=lambda: change_frame(self.frame, log_in.frame))
+			command=lambda: [change_frame(self.frame, log_in.frame, self.username_entry, self.email_entry, self.password_entry, self.repassword_entry), 
+							delete_errors(self.required_username_error, self.begin_username_error, self.invalid_username_error, self.username_existed_error, self.limit_username_error, 
+										self.required_email_error, self.invalid_email_error, self.email_existed_error,
+										self.required_password_error, self.invalid_password_error, self.limit_password_error,
+										self.required_repassword_error, self.match_repassword_error)])
 		self.go_to_login_button.grid(column=0, row=15, pady=5)	
 
 		# errors messages
@@ -1564,45 +1616,14 @@ class signup():
 		userdata.insert(pos, [self.username_code , self.email_code, get_hash(self.password)])
 		trans_str()
 		
-		change_frame(self.frame, log_in.frame)
+		change_frame(self.frame, log_in.frame, self.username_entry, self.email_entry, self.password_entry, self.repassword_entry)
+		delete_errors(self.required_username_error, self.begin_username_error, self.invalid_username_error, self.username_existed_error, self.limit_username_error, 
+					self.required_email_error, self.invalid_email_error, self.email_existed_error,
+					self.required_password_error, self.invalid_password_error, self.limit_password_error,
+					self.required_repassword_error, self.match_repassword_error)
 
 # -------------------- LOG IN --------------------
 class login():
-	def play_game(self):
-		file.close()
-		root.destroy()
-		global play
-		play = game_frame()
-	
-	def process(self):
-		global userdata
-
-		self.required_username_error.grid_forget()
-		self.required_password_error.grid_forget()
-		self.find_username_error.grid_forget()
-		self.match_password_error.grid_forget()
-
-		if len(self.username_entry.get()) <= 0:
-			self.required_username_error.grid(column=0, row=3, padx=80, pady=5, sticky="W")
-			return None
-		
-		self.username_code = get_hash(self.username_entry.get())
-		self.pos = pos_username(self.username_code)
-		if self.pos <= 0 or self.pos > len(userdata) or userdata[self.pos - 1][0] != self.username_code:
-			self.find_username_error.grid(column=0, row=3, padx=80, pady=5, sticky="W")
-			return None
-
-		if len(self.password_entry.get()) <= 0:
-			self.required_password_error.grid(column=0, row=6, padx=80, pady=5, sticky="W")
-			return None
-
-		if get_hash(self.password_entry.get()) != userdata[self.pos - 1][2]:
-			self.match_password_error.grid(column=0, row=6, padx=80, pady=5, sticky="W")
-			return None
-
-		# login in successful
-		self.play_game()
-
 	def __init__(self) -> None:
 		self.frame = tk.Frame(root, width=600, height=675)
 		self.frame.pack(side="right")
@@ -1650,7 +1671,9 @@ class login():
 			font=("Calibri", 13, "bold"), 
 			bd=0, 
 			cursor="hand2",
-			command=lambda: change_frame(self.frame, self.reset_pass.frame))
+			command=lambda: [change_frame(self.frame, self.reset_pass.frame, self.username_entry, self.password_entry),
+							delete_errors(self.required_username_error, self.find_username_error,
+										self.required_password_error, self.match_password_error)])
 		self.forget_password_button.grid(column=0, row=8)
 
 		# go to sign up
@@ -1661,15 +1684,54 @@ class login():
 			font=("Calibri", 13, "italic underline"), 
 			bd=0, 
 			cursor="hand2", 
-			command=lambda: change_frame(self.frame, self.sign_up.frame))
+			command=lambda: [change_frame(self.frame, self.sign_up.frame, self.username_entry, self.password_entry),
+							delete_errors(self.required_username_error, self.find_username_error,
+							self.required_password_error, self.match_password_error)])
 		self.go_to_signup_button.grid(column=0, row=9)
 
 		# errors messages
 		self.required_username_error = tk.Label(self.frame, text="Username is required.", font=("Calibri", 11), fg="red")
-		self.required_password_error = tk.Label(self.frame, text="Password is required.", font=("Calibri", 11), fg="red")
 		self.find_username_error = tk.Label(self.frame, text="Username doesn't exist.", font=("Calibri", 11), fg="red")
+		self.required_password_error = tk.Label(self.frame, text="Password is required.", font=("Calibri", 11), fg="red")
 		self.match_password_error = tk.Label(self.frame, text="The username or password is incorrect.", font=("Calibri", 11), fg="red")
 
+	def process(self):
+		global userdata
+
+		self.required_username_error.grid_forget()
+		self.find_username_error.grid_forget()
+		self.required_password_error.grid_forget()
+		self.match_password_error.grid_forget()
+
+		if len(self.username_entry.get()) <= 0:
+			self.required_username_error.grid(column=0, row=3, padx=80, pady=5, sticky="W")
+			return None
+		
+		self.username_code = get_hash(self.username_entry.get())
+		self.pos = pos_username(self.username_code)
+		if self.pos <= 0 or self.pos > len(userdata) or userdata[self.pos - 1][0] != self.username_code:
+			self.find_username_error.grid(column=0, row=3, padx=80, pady=5, sticky="W")
+			return None
+
+		if len(self.password_entry.get()) <= 0:
+			self.required_password_error.grid(column=0, row=6, padx=80, pady=5, sticky="W")
+			return None
+
+		if get_hash(self.password_entry.get()) != userdata[self.pos - 1][2]:
+			self.match_password_error.grid(column=0, row=6, padx=80, pady=5, sticky="W")
+			return None
+
+		# login in successful
+		self.play_game()
+	
+	def play_game(self):
+		global pos
+		pos = self.pos - 1
+		file.close()
+		root.destroy()
+		get_data_playing()
+		global play
+		play = game_frame()
 class reset_password:
 	def __init__(self):
 		global log_in
@@ -1738,7 +1800,11 @@ class reset_password:
 			font=("Calibri", 13, "bold underline"), 
 			cursor="hand2", 
 			bd=0, 
-			command=lambda: change_frame(self.frame, log_in.frame))
+			command=lambda: [change_frame(self.frame, log_in.frame, self.username_entry, self.email_entry, self.password_entry, self.repassword_entry),
+							delete_errors(self.required_username_error, self.find_username_error,
+										self.required_email_error, self.find_email_error,
+										self.required_password_error, self.limit_password_error, self.invalid_password_error,
+										self.required_repassword_error, self.match_repassword_error)])
 		self.go_to_login_button.grid(column=0, row=14, padx=60, pady=5, sticky="W")	
 	
 		# errors messages
@@ -1814,7 +1880,11 @@ class reset_password:
 		userdata[self.pos - 1][2] = self.password_code
 		trans_str()
 
-		change_frame(self.frame, log_in.frame)
+		change_frame(self.frame, log_in.frame, self.username_entry, self.email_entry, self.password_entry, self.repassword_entry),
+		delete_errors(self.required_username_error, self.find_username_error,
+					self.required_email_error, self.find_email_error,
+					self.required_password_error, self.limit_password_error, self.invalid_password_error,
+					self.required_repassword_error, self.match_repassword_error)
 
 # --------------------------------------------------------------------------------
 
