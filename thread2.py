@@ -3,6 +3,7 @@ import pygame, random, sys, re, time, threading
 import numpy as np
 import tkinter as tk
 
+'''
 userdata = []
 pow = []
 MOD = int(1e9) + 9277
@@ -60,7 +61,7 @@ try:
 except FileNotFoundError:
 	print("File not Found.")
 	exit()	
-
+'''
 # --------------------------------------------------------------------------------
 
 # FPS and clock
@@ -210,11 +211,13 @@ def game_frame():
 
 
 	class Game():
-		def __init__(self, gold, history):
+		def __init__(self, gold, history, items):
+			#Load variable
 			self.has_load_map = False
 			self.has_load_bet = False
 			self.has_load_set = False
 			self.has_load_skill = False
+			self.has_load_shop = False
 			# display value
 			self.WINDOW_WIDTH = 1200
 			self.WINDOW_HEIGHT = 675
@@ -223,8 +226,7 @@ def game_frame():
 			self.scroll = 0
 			self.direction_scroll = 1
 			
-			# Font
-			self.font32 = pygame.font.Font("./asset/font/font1.ttf", self.WINDOW_WIDTH // 32 + 1)
+			
 			
 			# sound
 			self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
@@ -238,9 +240,14 @@ def game_frame():
 			self.bet = 1
 			self.rank = []
 			self.history = history
+			self.own_item = items
+			
+			#font text
 			self.show_text_chat = u""
-			self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 64 + 1)
-			self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 71 + 1)
+			
+			
+			#setting variable
+			self.music = True
 		
 		def main(self):
 			# Music
@@ -275,7 +282,7 @@ def game_frame():
 		def load_set(self):
 			# Load show set
 			images = []
-			for i in range(5):
+			for i in range(6):
 				image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
 				image = pygame.transform.scale(image,
 											(int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
@@ -283,7 +290,7 @@ def game_frame():
 			
 			self.sets_thumbnail = []
 			# Chua te hard code
-			for i in range(5):
+			for i in range(6):
 				if i <= 2:
 					self.sets_thumbnail.append(
 						Button(int(0.192 * self.WINDOW_WIDTH + i * (0.16 + 0.146) * self.WINDOW_WIDTH)
@@ -303,7 +310,7 @@ def game_frame():
 		def load_bet(self):
 			# Load betting
 			self.all_bet_thumbnail_images = []
-			for k in range(5):
+			for k in range(6):
 				temp = []
 				for i in range(5):
 					image = pygame.image.load(f'./asset/set/set_avt/{k + 1}{i + 1}.png')
@@ -369,6 +376,28 @@ def game_frame():
 				self.player_group.add(player)
 			self.has_load_player = True
 		
+		def load_shop(self):
+			# text shop button
+			image = pygame.image.load("./asset/image/shop.png")
+			scale = image.get_width() / image.get_height()
+			self.shop_text = pygame.transform.scale(image,
+			                                        (self.WINDOW_HEIGHT * 0.13 * scale, self.WINDOW_HEIGHT * 0.13))
+			# buy now button
+			image = pygame.image.load("./asset/button/button_buy_now.png")
+			scale = image.get_width() / image.get_height()
+			self.buy_button_actived = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale
+			                                                         , self.WINDOW_HEIGHT // 8))
+			image = pygame.image.load("./asset/button/button_buy_now_unactive.png")
+			self.buy_button_unactived = pygame.transform.scale(image,
+			                                                   (self.WINDOW_HEIGHT // 8 * scale,
+			                                                    self.WINDOW_HEIGHT // 8))
+			# coin
+			image = pygame.image.load("./asset/image/coin.png")
+			scale = image.get_width() / image.get_height()
+			self.coin = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.1 * scale, self.WINDOW_HEIGHT * 0.1))
+			
+			self.has_load_shop = True
+		
 		def show_main_menu(self):
 			if not self.has_load_map:
 				self.load_map_thread = threading.Thread(target=self.load_map)
@@ -382,26 +411,57 @@ def game_frame():
 			if not self.has_load_skill:
 				self.load_skill_thread = threading.Thread(target=self.load_skill)
 				self.load_skill_thread.start()
+			if not self.has_load_shop:
+				self.load_shop_thread = threading.Thread(target=self.load_shop)
+				self.load_shop_thread.start()
+				
 			# Load background
 			image = pygame.image.load("./asset/image/back.webp").convert()
 			scale = int(image.get_width() / image.get_height())
 			self.back_ground_image = pygame.transform.scale(image, (int(self.WINDOW_HEIGHT * scale), self.WINDOW_HEIGHT))
 			
 			# Button menu
-			image = pygame.image.load("./asset/button/start_button.png")
+			#new game button
+			image = pygame.image.load("./asset/button/button_new-game.png")
 			scale = image.get_width() / image.get_height()
-			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale, self.WINDOW_HEIGHT // 8))
-			start_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3,
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT* 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
+			start_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT* 0.28,
 								image, 1)
-			image = pygame.image.load("./asset/button/setting_button.png")
+			#settings button
+			image = pygame.image.load("./asset/button/button_settings.png")
 			scale = image.get_width() / image.get_height()
-			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale, self.WINDOW_HEIGHT // 8))
-			
-			setting_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + 100,
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
+			setting_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.443 ,
 									image, 1)
 			
+			#shop button
+			image = pygame.image.load("./asset/button/button_shop.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
+			shop_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.6,
+			                        image, 1)
+			#help button
+			image = pygame.image.load("./asset/button/button_help.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
+			help_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.76,
+			                        image, 1)
+			#game_text
+			image = pygame.image.load("./asset/image/lifeislie.png")
+			scale = image.get_width() / image.get_height()
+			life_is_lie = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.13 * scale, self.WINDOW_HEIGHT * 0.13))
+			life_is_lie_rect = life_is_lie.get_rect()
+			life_is_lie_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT//10)
+			
+			# Font (Set here because the height can be change from the settings options)
+			self.font32 = pygame.font.Font("./asset/font/font1.ttf", self.WINDOW_WIDTH // 32 + 1)
+			self.font19 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 64 + 1)
+			self.font17 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 71 + 1)
+			self.font64 = pygame.font.Font("./asset/font/aachenb.ttf", self.WINDOW_WIDTH // 25 + 1)
+			
 			self.menu_music.stop()
-			self.menu_music.play(-1)
+			if self.music:
+				self.menu_music.play(-1)
 			
 			main_menu_run = True
 			while main_menu_run:
@@ -416,15 +476,171 @@ def game_frame():
 						if start_button.rect.collidepoint(pos):
 							if self.has_load_map:
 								self.start_new_round()
-						
+						if help_button.rect.collidepoint(pos):
+							self.show_help()
+						if shop_button.rect.collidepoint(pos):
+							if self.has_load_shop:
+								self.show_shop()
 						if setting_button.rect.collidepoint(pos):
 							self.show_setting()
+						
 				
 				start_button.draw(self.display_surface)
 				setting_button.draw(self.display_surface)
+				help_button.draw(self.display_surface)
+				shop_button.draw(self.display_surface)
+				self.display_surface.blit(life_is_lie, life_is_lie_rect)
 				pygame.display.update()
 				clock.tick(FPS)
 		
+		def show_help(self):
+			
+			# GO BACK BUTTON
+			image = pygame.image.load("./asset/button/go_back_button.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image,
+			                               (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+			go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+			                        int(0.075 * self.WINDOW_HEIGHT),
+			                        image, 1)
+			image = pygame.image.load("./asset/image/help.png")
+			help_image = pygame.transform.scale(image, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+			
+			helping = True
+			while helping:
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						pygame.quit()
+						sys.exit()
+					if event.type == pygame.MOUSEBUTTONDOWN:
+						pos = pygame.mouse.get_pos()
+						# Check click Map
+						if go_back_button.rect.collidepoint(pos):
+							helping = False
+						
+				self.show_back_ground()
+				#show the help
+				self.display_surface.blit(help_image, (0,0))
+				# DRAW BUTTON
+				go_back_button.draw(self.display_surface)
+				pygame.display.update()
+				clock.tick(FPS)
+		
+		
+		
+		def show_shop(self):
+			# GO BACK BUTTON
+			image = pygame.image.load("./asset/button/go_back_button.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image,
+			                               (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+			go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+			                        int(0.075 * self.WINDOW_HEIGHT),
+			                        image, 1)
+			
+			
+			
+			# buy variable
+			can_buy = self.gold >= 500 and self.own_item <= 2
+			
+			#buy now
+			
+			if can_buy:
+				buy_button = Button(self.WINDOW_WIDTH//2, self.WINDOW_HEIGHT*0.84, self.buy_button_actived, 1)
+			else:
+				buy_button = Button(self.WINDOW_WIDTH//2, self.WINDOW_HEIGHT*0.84, self.buy_button_unactived, 1)
+
+			#lucky box
+			image = pygame.image.load("./asset/image/gift_box.png")
+			scale = image.get_width() / image.get_height()
+			gift_box = pygame.transform.scale(image, (self.WINDOW_HEIGHT *0.45 * scale, self.WINDOW_HEIGHT*0.45))
+			gift_box_rect = gift_box.get_rect()
+			gift_box_rect.center = (self.WINDOW_WIDTH //2, self.WINDOW_HEIGHT *0.3)
+			
+			#coin
+			
+			coin_rect = self.coin.get_rect()
+			coin_rect.centery = self.WINDOW_HEIGHT * 0.6
+			coin_rect.left = self.WINDOW_WIDTH // 2.7
+			
+			# user gold text
+			gold_text = self.font64.render(f'{self.gold}', True, YELLOW)
+			gold_text_rect = gold_text.get_rect()
+			gold_text_rect.centery = self.WINDOW_HEIGHT * 0.6
+			gold_text_rect.left = coin_rect.right + self.WINDOW_WIDTH * (20.0 / 1200)
+			
+			price = max(self.gold // 10, 500)
+			price_text = self.font64.render(f'-{price}', True, RED)
+			price_text_rect = price_text.get_rect()
+			price_text_rect.topleft = gold_text_rect.bottomleft
+			price_text_rect.y += self.WINDOW_HEIGHT * (25.0 / 675)
+			
+			# shop text
+			shop_text_rect = self.shop_text.get_rect()
+			shop_text_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 10)
+			
+			#owner items text
+			item_count = self.font64.render(f"X {self.own_item}", True ,GREEN)
+			item_count_rect = item_count.get_rect()
+			item_count_rect.centery = gift_box_rect.centery + self.WINDOW_HEIGHT * (15.0 / 675)
+			item_count_rect.left = gift_box_rect.right
+			
+			#sound
+			buy_item_sound = pygame.mixer.Sound("./asset/music/buy_item_sound.mp3")
+			
+			
+			
+			
+			shopping = True
+			while shopping:
+				can_buy = self.gold >= price and self.own_item <= 2
+				if can_buy:
+					buy_button.image = self.buy_button_actived
+				else:
+					buy_button.image = self.buy_button_unactived
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						pygame.quit()
+						sys.exit()
+					if event.type == pygame.MOUSEBUTTONDOWN:
+						pos = pygame.mouse.get_pos()
+						# Check click Map
+						if go_back_button.rect.collidepoint(pos):
+							shopping = False
+						if buy_button.rect.collidepoint(pos):
+							if can_buy:
+								self.gold -= price
+								self.own_item += 1
+								if self.music:
+									buy_item_sound.play()
+				
+				self.show_back_ground()
+				# DRAW BUTTON
+				go_back_button.draw(self.display_surface)
+				buy_button.draw(self.display_surface)
+				
+				#shop text
+				self.display_surface.blit(self.shop_text, shop_text_rect)
+				
+				
+				#User gold text
+				gold_text = self.font64.render(f'{self.gold}', True, YELLOW) #rerender the gold text
+				price = max(self.gold // 10, 500)
+				price_text = self.font64.render(f'-{price}', True, RED) #rerender price
+				if self.own_item == 3:
+					item_count = self.font64.render(f"X {self.own_item} (MAX)", True, GREEN) #rerender the items
+				else:
+					item_count = self.font64.render(f"X {self.own_item}", True, GREEN)  # rerender the items
+				self.display_surface.blit(gold_text, gold_text_rect)
+				self.display_surface.blit(price_text, price_text_rect)
+				self.display_surface.blit(item_count, item_count_rect)
+				# lucky box and coin
+				self.display_surface.blit(gift_box, gift_box_rect)
+				self.display_surface.blit(self.coin, coin_rect)
+				
+				pygame.display.update()
+				clock.tick(FPS)
+				
 		def show_back_ground(self):
 			if self.scroll <= 0:
 				self.direction_scroll = 1
@@ -447,11 +663,24 @@ def game_frame():
 									image, 1)
 			
 			# setting option button
-			image = pygame.image.load("./asset/button/resolution_button'.png")
+			image = pygame.image.load("./asset/button/button_resolution.png")
 			scale = image.get_width() / image.get_height()
 			image = pygame.transform.scale(image,
 										(self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
-			resolution_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3, image, 1)
+			resolution_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.52, image, 1)
+			
+			image1 = pygame.image.load("./asset/button/button_music.png")
+			image2 = pygame.image.load("./asset/button/button_music_off.png")
+			scale = image.get_width() / image.get_height()
+			music_actived = pygame.transform.scale(image1,
+			                               (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
+			music_unactived = pygame.transform.scale(image2,
+			                                      (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
+			if self.music:
+				music_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.357 , music_actived , 1)
+			else:
+				music_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.357 , music_unactived , 1)
+
 			
 			setting = True
 			while setting:
@@ -466,11 +695,21 @@ def game_frame():
 							setting = False
 						if resolution_button.rect.collidepoint(pos):
 							self.show_resolution()
+						if music_button.rect.collidepoint(pos):
+							if self.music:
+								self.music = False
+								music_button.image = music_unactived
+								self.menu_music.stop()
+							else:
+								self.music = True
+								music_button.image = music_actived
+								self.menu_music.play(-1)
 				
 				self.show_back_ground()
 				# DRAW BUTTON
 				go_back_button.draw(self.display_surface)
 				resolution_button.draw(self.display_surface)
+				music_button.draw(self.display_surface)
 				pygame.display.update()
 				clock.tick(FPS)
 		
@@ -514,6 +753,7 @@ def game_frame():
 							self.has_load_bet = False
 							self.has_load_map = False
 							self.has_load_set = False
+							self.has_load_shop = False
 							self.show_main_menu()
 						
 						if btn_800x450.rect.collidepoint(pos):
@@ -523,6 +763,7 @@ def game_frame():
 							self.has_load_bet = False
 							self.has_load_map = False
 							self.has_load_set = False
+							self.has_load_shop = False
 							self.show_main_menu()
 						
 						if btn_1200x675.rect.collidepoint(pos):
@@ -532,6 +773,7 @@ def game_frame():
 							self.has_load_bet = False
 							self.has_load_map = False
 							self.has_load_set = False
+							self.has_load_shop = False
 							self.show_main_menu()
 				self.show_back_ground()
 				# DRAW BUTTON
@@ -642,6 +884,7 @@ def game_frame():
 			
 			# User click the thumnail
 			have_click = False
+			
 			betting = True
 			while betting:
 				if have_click == False:
@@ -688,11 +931,14 @@ def game_frame():
 							if event.key == pygame.K_BACKSPACE:
 								user_text = user_text[0: -1]
 							else:
-								if len(user_text) <= 12:
+								if len(user_text) <= 10 and event.unicode.isdigit():
 									user_text += event.unicode
+								elif event.key == pygame.K_RETURN:
+									if not error and have_click:
+										self.race()
 				
 				# Check error
-				error = (len(user_text) >= 13) or (not user_text.isdigit()) or (int(user_text) <= 0) or (
+				error = (len(user_text) >= 11) or (not user_text.isdigit()) or (int(user_text) <= 0) or (
 					int(user_text) > self.gold)
 				self.show_back_ground()
 				# Draw character
@@ -777,19 +1023,20 @@ def game_frame():
 						if go_back_button.rect.collidepoint(pos):
 							chosing_set = False
 						# Check chosing set
-						for i in range(5):
+						for i in range(6):
 							if self.sets_thumbnail[i].rect.collidepoint(pos):
 								self.set = i + 1
 								self.show_bet()
 				self.show_back_ground()
 				# DRAW BUTTON
-				for i in range(5):
+				for i in range(6):
 					self.sets_thumbnail[i].draw(self.display_surface)
 				go_back_button.draw(self.display_surface)
 				pygame.display.update()
 				clock.tick(FPS)
 		
 		def show_victory(self):
+			
 			# cong tien
 			if self.bet == self.rank[0].index:
 				self.gold += self.bet_money
@@ -803,16 +1050,16 @@ def game_frame():
 			if len(self.history) >= 5:
 				self.history.pop()
 			self.history.insert(0,  [self.bet, self.map, sign * self.bet_money])
+			
 			global gold, history
 			gold = self.gold
 			history = self.history
 			save_data_playing()
-
-			
 			self.load_race_thread.join()
 			self.race_music.stop()
 			show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
-			show_vic_music.play(-1)
+			if self.music:
+				show_vic_music.play(-1)
 			image = pygame.image.load("./asset/image/show_vic.png")
 			self.victory_image = pygame.transform.scale(image, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 			
@@ -1035,7 +1282,8 @@ def game_frame():
 			# count down
 			
 			self.count_down()
-			self.race_music.play()
+			if self.music:
+				self.race_music.play()
 			
 			# text box
 			text_box = self.font19.render(f'Chat: {user_text}', True, BLACK)
@@ -1268,7 +1516,8 @@ def game_frame():
 				self.rect.right = my_game.map_rect.right
 				if self not in my_game.rank:
 					if len(my_game.rank) == 0:
-						my_game.yeah_sound.play()
+						if my_game.music:
+							my_game.yeah_sound.play()
 						self.is_cele = True
 					self.get_race()
 			
@@ -1321,9 +1570,11 @@ def game_frame():
 
 	global gold, history
 	pygame.init()
-	my_game = Game(gold, history)
+	my_game = Game(10000, [], 0)
 	my_game.main()
-
+	
+game_frame()
+'''
 # --------------------------------------------------------------------------------
 
 WINDOW_WIDTH = 1200
@@ -1891,4 +2142,4 @@ class reset_password:
 prep_hash()
 log_in = login()
 
-root.mainloop()
+root.mainloop()'''
