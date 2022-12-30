@@ -369,11 +369,20 @@ def game_frame():
 			self.backmap_rect = self.backmap.get_rect()
 			self.backmap_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 2)
 			
+			#load
+			image = pygame.image.load(f"./asset/image/lucky_box.png")
+			scale = self.backmap.get_width() / self.backmap.get_height()
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT*0.12 * scale, self.WINDOW_HEIGHT*0.12))
+			self.use_item_button = Button((1-0.084)* self.WINDOW_WIDTH, (1-0.12)*self.WINDOW_HEIGHT,image , 1)
+			
+			
 			# Add Character
 			self.player_group = pygame.sprite.Group()
 			for i in range(1, 6):
 				player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
 				self.player_group.add(player)
+				if i == self.bet:
+					self.user_player = player
 			self.has_load_player = True
 		
 		def load_shop(self):
@@ -935,6 +944,7 @@ def game_frame():
 									user_text += event.unicode
 								elif event.key == pygame.K_RETURN:
 									if not error and have_click:
+										self.bet_money = int(user_text)
 										self.race()
 				
 				# Check error
@@ -1054,7 +1064,7 @@ def game_frame():
 			global gold, history
 			gold = self.gold
 			history = self.history
-			save_data_playing()
+			#save_data_playing()
 			self.load_race_thread.join()
 			self.race_music.stop()
 			show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
@@ -1295,6 +1305,16 @@ def game_frame():
 			
 			text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
 			self.list_choice = [1,2,3,4,5]
+			
+			#use item variable
+			can_uses = self.own_item > 0
+			#player bet
+			for player in self.player_group.sprites():
+				if player.index == self.bet:
+					self.user_player = player
+					break
+			
+			
 			# Main loop
 			while racing:
 				print(self.time)
@@ -1328,6 +1348,32 @@ def game_frame():
 							active = True
 						else:
 							active = False
+						
+						if self.use_item_button.rect.collidepoint(pos) and can_uses:
+							can_uses = False
+							self.own_item -= 1
+							# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
+							type = random.choices([1,3,5], weights=[0.5, 1-0.5-0.001,.001])[0]
+							# Set timeskill
+							if type == 1:
+								self.user_player.speed_up_time += FPS  # one second
+							elif type == 3:
+								self.user_player.positionx += 150  #
+								if self.user_player.rect.right + 150 >= self.map_rect.right and \
+									self.map_rect.right > self.WINDOW_WIDTH:
+									self.user_player.win_absolute = True
+								self.user_player.pos_tele = self.user_player.rect.topleft
+								self.user_player.tele_frame = 5
+							
+							elif type == 5:
+								self.user_player.pos_tele = self.player.rect.topleft
+								self.user_player.tele_frame = 5
+								self.user_player.rect.right = self.map_rect.right
+								if self.map_rect.right > self.WINDOW_WIDTH:
+									self.player.win_absolute = True
+							if self.music:
+								my_game.collect_sound.play()
+				
 					
 					if event.type == pygame.KEYDOWN:
 						if event.key == pygame.K_BACKSPACE:
@@ -1412,6 +1458,9 @@ def game_frame():
 				# BLit the item
 				item_group.update()
 				item_group.draw(self.display_surface)
+				#Blit the use item button
+				if can_uses:
+					self.use_item_button.draw(self.display_surface)
 				
 				# Show chat
 				if (random.randint(0, 1000) >= 998):
@@ -1531,7 +1580,7 @@ def game_frame():
 			
 			# draw mui ten
 			if self.index == my_game.bet:
-				my_game.display_surface.blit(self.mui_ten, (int(self.rect.left * 0.93) - 30, int(self.rect.top)))
+				my_game.display_surface.blit(self.mui_ten, (int(self.rect.left * 0.93) - 10, int(self.rect.top)))
 		
 		def get_race(self):
 			# win absolute la dich chuyen thang ve dich, nen khong can ngung man hinh - > may con kia chay bthg
