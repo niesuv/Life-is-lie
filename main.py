@@ -1619,7 +1619,7 @@ def game_frame():
 
 	global gold, history
 	pygame.init()
-	my_game = Game(10000, [], 0)
+	my_game = Game(gold, history, item)
 	my_game.main()
 	
 
