@@ -79,34 +79,39 @@ WHITE = (255, 255, 255)
 play = None
 pos = int()
 gold = int()
+items = int()
 history = []
 
 # --------------------------------------------------------------------------------
 
 def get_data_playing():
-	global userdata, pos, gold, history
+	global userdata, pos, gold, history, items
 	
-	if (len(userdata[pos]) < 5):
-		gold = 1000
+	if (len(userdata[pos]) < 6):
+		gold = 10000
+		items = 0
 		return
 	gold = userdata[pos][3]
-	for i in range(4, len(userdata[pos]), 3):
+	items = userdata[pos][4]
+	for i in range(5, len(userdata[pos]), 3):
 		tmp = [userdata[pos][i], userdata[pos][i + 1], userdata[pos][i + 2]]
 		history.append(tmp)
 
 def save_data_playing():
 	global userdata, pos, gold, history
 
-	while (len(userdata[pos]) + len(history) > 9):
+	while (len(userdata[pos]) + len(history) > 10):
 		userdata[pos].pop()
-	if len(userdata[pos]) < 4:
+	if len(userdata[pos]) < 5:
 		userdata[pos].append(gold)
+		userdata[pos].append(items)
 	else: 
 		userdata[pos][3] = gold
+		userdata[pos][4] = items
 	for i in range(len(history) - 1, -1, -1):
-		userdata[pos].insert(4, history[i][2])
-		userdata[pos].insert(4, history[i][1])
-		userdata[pos].insert(4, history[i][0])
+		userdata[pos].insert(5, history[i][2])
+		userdata[pos].insert(5, history[i][1])
+		userdata[pos].insert(5, history[i][0])
 	
 	trans_str()
 
@@ -599,7 +604,7 @@ def game_frame():
 			
 			
 			
-			
+			global gold, items
 			shopping = True
 			while shopping:
 				can_buy = self.gold >= price and self.own_item <= 2
@@ -609,6 +614,9 @@ def game_frame():
 					buy_button.image = self.buy_button_unactived
 				for event in pygame.event.get():
 					if event.type == pygame.QUIT:
+						gold = self.gold
+						items = self.own_item
+						save_data_playing()
 						pygame.quit()
 						sys.exit()
 					if event.type == pygame.MOUSEBUTTONDOWN:
@@ -649,6 +657,10 @@ def game_frame():
 				
 				pygame.display.update()
 				clock.tick(FPS)
+			
+			gold = self.gold
+			items = self.own_item
+			save_data_playing()
 				
 		def show_back_ground(self):
 			if self.scroll <= 0:
@@ -925,7 +937,7 @@ def game_frame():
 						else:
 							active = False
 						
-						# CHeck click play_now
+						# Check click play_now
 						if play_button.rect.collidepoint(pos):
 							if not error and have_click:
 								for i in range(5):
@@ -1617,9 +1629,9 @@ def game_frame():
 				if self.cele < 0:
 					self.cele *= -1
 
-	global gold, history
+	global gold, history, items
 	pygame.init()
-	my_game = Game(10000, [], 0)
+	my_game = Game(gold, history, items)
 	my_game.main()
 	
 
@@ -1633,7 +1645,7 @@ root = tk.Tk()
 root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{int(root.winfo_screenwidth()/2 - WINDOW_WIDTH/2)}+{int(root.winfo_screenheight()/2 - WINDOW_HEIGHT/2)}")
 # root.resizable(False, False)
 root.iconbitmap("./asset/image/logo.ico")
-root.title("Life is a lie")
+root.title("Life is lie")
 
 show = tk.PhotoImage(file="./asset/image/show.png")
 hide = tk.PhotoImage(file="./asset/image/hide.png")
@@ -1707,7 +1719,7 @@ class signup():
 		
 		self.frame = tk.Frame(root, width=600, height=675)
 		
-		tk.Label(self.frame, text="Join Life is a lie", font=("Calibria", 30, "bold")).grid(column=0, row=0, padx=60, pady=10, sticky="N")
+		tk.Label(self.frame, text="Join Life is lie", font=("Calibria", 30, "bold")).grid(column=0, row=0, padx=60, pady=10, sticky="N")
 
 		# username
 		tk.Label(self.frame, text="Username", font=("Calibri", 15, "bold")).grid(column=0, row=1, pady=5, ipadx=50, sticky="W")
@@ -1789,7 +1801,7 @@ class signup():
 
 		self.required_password_error = tk.Label(self.frame, text="Password is required.", font=("Calibri", 11), fg="red")
 		self.invalid_password_error = tk.Label(self.frame, text="Sorry, only letters (A-Z, a-z) and numbers (0-9) are allowed.", font=("Calibri", 11), fg="red")
-		self.limit_password_error = tk.Label(self.frame, text="Password value length exceeds 16 characters.", font=("Calibri", 12), fg="red")	
+		self.limit_password_error = tk.Label(self.frame, text="Password length must be 8 - 16 characters.", font=("Calibri", 12), fg="red")	
 
 		self.required_repassword_error = tk.Label(self.frame, text="Confirm password is required.", font=("Calibri", 11), fg="red")
 		self.match_repassword_error = tk.Label(self.frame, text="Passwords do not match.", font=("Calibri", 11), fg="red")
@@ -1895,7 +1907,7 @@ class signup():
 		if len(self.password) <= 0:
 			self.required_password_error.grid(column=0, row=9, pady=5, ipadx=50, sticky="W")
 			return None
-		if len(self.password) > 16:
+		if len(self.password) > 16 or len(self.password) < 8:
 			self.limit_password_error.grid(column=0, row=9, pady=5, ipadx=50, sticky="W")
 			return None
 		for i in self.password:
@@ -1927,7 +1939,7 @@ class login():
 		self.frame = tk.Frame(root, width=600, height=675)
 		self.frame.pack(side="right")
 		
-		tk.Label(self.frame, text="Log in to Life is a lie", font=("Calibria", 30, "bold")).grid(column=0, row=0, padx=30, pady=20, sticky="N")
+		tk.Label(self.frame, text="Log in to Life is lie", font=("Calibria", 30, "bold")).grid(column=0, row=0, padx=30, pady=20, sticky="N")
 
 		# username
 		tk.Label(self.frame, text="Username", font=("Calibri", 15, "bold")).grid(column=0, row=1, padx=80, pady=5, sticky="W")
@@ -2114,7 +2126,7 @@ class reset_password:
 		self.find_email_error = tk.Label(self.frame, text="The username or email is incorrect.", font=("Calibri", 12), fg="red")	
 
 		self.required_password_error = tk.Label(self.frame, text="Password is required.", font=("Calibri", 11), fg="red")
-		self.limit_password_error = tk.Label(self.frame, text="Password value length exceeds 16 characters.", font=("Calibri", 12), fg="red")	
+		self.limit_password_error = tk.Label(self.frame, text="Password length must be 8 - 16 characters.", font=("Calibri", 12), fg="red")	
 		self.invalid_password_error = tk.Label(self.frame, text="Sorry, only letters (A-Z, a-z) and numbers (0-9) are allowed.", font=("Calibri", 11), fg="red")
 
 		self.required_repassword_error = tk.Label(self.frame, text="Confirm password is required.", font=("Calibri", 11), fg="red")
@@ -2157,7 +2169,7 @@ class reset_password:
 		if len(self.password) <= 0:
 			self.required_password_error.grid(column=0, row=9, padx=50, pady=5, sticky="W")
 			return None
-		if len(self.password) > 16:
+		if len(self.password) > 16 or len(self.password) < 8:
 			self.limit_password_error.grid(column=0, row=9, padx=50, pady=5, sticky="W")
 			return None
 		for i in self.password:
