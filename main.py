@@ -212,7 +212,8 @@ def game_frame():
 					self.player.pos_tele = self.player.rect.topleft
 					self.player.tele_frame = 5
 				self.remove(self.item_group)
-				my_game.collect_sound.play()
+				if my_game.music:
+					my_game.collect_sound.play()
 
 
 	class Game():
@@ -1194,7 +1195,8 @@ def game_frame():
 			
 			frame_count = 0
 			time = 3
-			music.play()
+			if self.music:
+				music.play()
 			while True:
 				for event in pygame.event.get():
 					if event.type == pygame.QUIT:
