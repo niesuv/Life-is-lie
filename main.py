@@ -1,13 +1,13 @@
-import pygame, random, sys, re, time, threading
-import numpy as np
+import threading
+import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
 from keras.models import load_model
 import gensim.models.keyedvectors as keyedvectors
-import re
 
 userdata = []
 pow = []
 MOD = int(1e9) + 9277
+
 
 def prep_hash():
 	BASE = 256
