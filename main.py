@@ -1,8 +1,9 @@
-from turtle import window_width
 import pygame, random, sys, re, time, threading
 import numpy as np
 import tkinter as tk
-
+from keras.models import load_model
+import gensim.models.keyedvectors as keyedvectors
+import re
 
 userdata = []
 pow = []
@@ -256,7 +257,7 @@ def game_frame():
 			self.scroll = 0
 			self.direction_scroll = 1
 			
-			
+			self.user_name =  str(userdata[pos][0])
 			
 			# sound
 			self.collect_sound = pygame.mixer.Sound("./asset/music/collect_music.wav")
@@ -274,7 +275,6 @@ def game_frame():
 			
 			#font text
 			self.show_text_chat = u""
-			
 			
 			#setting variable
 			self.music = True
@@ -384,6 +384,7 @@ def game_frame():
 			#finish
 			self.has_load_skill = True
 		def load_race(self):
+
 			# Set back map
 			self.backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 			scale = self.backmap.get_width() / self.backmap.get_height()
@@ -617,7 +618,7 @@ def game_frame():
 			item_count_rect.left = gift_box_rect.right
 			
 			#sound
-			buy_item_sound = pygame.mixer.Sound("./asset/music/buy_item_sound.mp3")
+			buy_item_sound = pygame.mixer.Sound("./asset/music/buy_item_sound.wav")
 			
 			
 			
@@ -822,10 +823,29 @@ def game_frame():
 				pygame.display.update()
 				clock.tick(FPS)
 		
+		def comment_embedding(self, comment):
+			max_seq = 200
+			embedding_size = 200
+			model_embedding = keyedvectors.KeyedVectors.load('./asset./AI/word.model')
+    
+			word_labels = []
+			for word in list(model_embedding.key_to_index.keys()):
+				word_labels.append(word)
+        
+			matrix = np.zeros((max_seq, embedding_size))
+			words = comment.split()
+			lencmt = len(words)
+
+			for i in range(max_seq):
+				indexword = i % lencmt
+				if (max_seq - i < lencmt):
+					break
+				if (words[indexword] in word_labels):
+					matrix[i] = model_embedding[words[indexword]]
+			matrix = np.array(matrix)
+			return matrix
+
 		def preprocess_data(self, comments):
-			
-			# get rid of "train"
-			comments = comments.replace("train", " ")
 			# Lower case
 			comments = comments.lower()
 			# Look for one or more characters between 0-9
@@ -846,36 +866,28 @@ def game_frame():
 			comments = re.split('[ #%^&*@$/#.-:&*+=\[\]?!(){},\'">_<;%\n\r\t\|]', comments)
 			# remove any empty word string
 			comments = [word for word in comments if len(word) > 0]
-			
+			comments = " ".join(comments)
+    
 			return comments
-		
-		def sigmoid(self, z):
-			return (1 / (1 + np.exp(-z)))
-		
+
 		def AI_evaluate(self, comments):
-			# Load vocabList and theta
-			vocabList = open("./asset/AI/vocabulary.txt", encoding="utf8")
-			vocabList = str(vocabList.read()).split("\n")
-			theta = np.loadtxt('./asset/AI/optimizedTheta.txt')
-			
-			# Digitize data
-			n = len(vocabList)  # numbers of features
-			word_indices = [0 for i in range(n)]
+			model_sentiment = load_model("./asset./AI/models.h5")
 			comments = self.preprocess_data(comments)
-			
-			for i in range(n):
-				if vocabList[i] in comments:
-					word_indices[i] += 1
-			
-			# Output
-			# print(self.sigmoid(np.array(word_indices) @ theta.T))
-			if len(comments) == 0:
-				print(u"\nBạn muốn nói gì sao?\n")
-			elif (self.sigmoid(np.array(word_indices) @ theta.T)) >= (0.5 + 10e-6) or ("chó" in comments) or (
-				"lỗi" in comments):
-				print(u"\nBạn hẳn đã có một ngày không tốt!\nHãy để Silly Squad giúp bạn nhé!\n")
-			else:
-				print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
+			if comments == "":
+				return 1
+
+			maxtrix_embedding = np.expand_dims(self.comment_embedding(comments), axis=0)
+			maxtrix_embedding = np.expand_dims(maxtrix_embedding, axis=3)
+
+			result = model_sentiment.predict(maxtrix_embedding)
+			result = result[:,:2]
+
+			result = np.argmax(result)
+			print("Label predict: ", result)
+			#0 là tiêu cực
+			#1 là tích cực
+		
+			return result
 		
 
 	
@@ -1110,7 +1122,15 @@ def game_frame():
 				clock.tick(FPS)
 		
 		def show_victory(self):
-			
+			#Load AI_evaluate response(khoảng 5s)
+			negative = pygame.transform.scale(pygame.image.load(f"./asset/image/negative.png")
+											, (int(self.WINDOW_WIDTH * 0.3), int(self.WINDOW_HEIGHT * 0.17)))
+			positive = pygame.transform.scale(pygame.image.load(f"./asset/image/positive.png")
+											, (int(self.WINDOW_WIDTH * 0.3), int(self.WINDOW_HEIGHT * 0.17)))
+			response = self.AI_evaluate(self.user_text)
+			self.user_text = u""
+			self.show_text_chat = u""
+
 			# cong tien
 			if self.bet == self.rank[0].index:
 				self.gold += self.bet_money * (self.map_length - 1)
@@ -1118,7 +1138,6 @@ def game_frame():
 			else:
 				self.gold -= self.bet_money
 				sign = -1
-				
 				
 			#data variable-Save vo data nhe (self.gold, self.history)
 			if len(self.history) >= 5:
@@ -1129,6 +1148,7 @@ def game_frame():
 			gold = self.gold
 			history = self.history
 			save_data_playing()
+
 			self.load_race_thread.join()
 			self.race_music.stop()
 			show_vic_music = pygame.mixer.Sound("./asset/music/show_vic.wav")
@@ -1196,10 +1216,7 @@ def game_frame():
 						pos = pygame.mouse.get_pos()
 						
 						# Click play again
-						if play_button.rect.collidepoint(pos):
-							self.AI_evaluate(self.user_text)
-							self.user_text = u""
-							self.show_text_chat = u""
+						if play_button.rect.collidepoint(pos):							
 							show_vic_music.stop()
 							self.rank = []
 							self.show_main_menu()
@@ -1225,6 +1242,12 @@ def game_frame():
 					int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75) + gold_box_rect.height)
 				self.display_surface.blit(bet_box, bet_box_rect)
 				
+				#AI_evaluate response
+				if response == 1: #tich cực (cho bản AI_evaluate6, 7)
+					self.display_surface.blit(positive, (0, 0))
+				else:
+					self.display_surface.blit(negative, (0, 0))
+
 				# DRAW BUTTON
 				pygame.display.update()
 				clock.tick(FPS)
@@ -1270,7 +1293,7 @@ def game_frame():
 				pygame.display.update()
 		
 		def blit_text(self, surface, text, pos, font, background_color=None, color=pygame.Color('black')):
-			if self.map == 2 or self.map == 3 or self.map == 4:
+			if self.map == 2 or self.map == 3 or self.map == 4 or self.map == 5:
 				color = WHITE
 			x, y = pos
 			for line in text.splitlines():
@@ -1287,8 +1310,7 @@ def game_frame():
 			elif len(comments) > 0:
 				if self.show_text_chat.count("\n") >= 4:
 					self.show_text_chat = self.show_text_chat[self.show_text_chat.find("\n") + 1:]
-				self.show_text_chat += "User_name: " + str(comments)[
-													2:-3] + "\n"  # self.user_name + str(comments)[2:-3] + "\n"
+				self.show_text_chat += self.user_name + ": "+ str(comments)[2:-3] + "\n"
 			else:
 				temp = random.randint(1, 15)
 				switcher = {

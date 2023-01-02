@@ -1,136 +1,183 @@
-﻿################# Chi run khi bạn thêm dữ liệu vào trainData ################
-import re
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
+
+
+from gensim.models import Word2Vec
+import pandas as pd
+import gensim.models.keyedvectors as word2vec
 import numpy as np
-from scipy.optimize import minimize
-
-def preprocess_data(comments):
-    i = -1
-    while comments[i] == "\n": i -= 1
-    y = [comments[i]] 
-
-    # get rid of "train"
-    comments = comments.replace("train", " ")
-    # Lower case
-    comments = comments.lower()
-    # Look for one or more characters between 0-9
-    comments = re.compile('[0-9]+').sub(' ', comments)
-    # Look for strings starting with http:// or https://
-    comments = re.compile('(http|https)://[^\s]*').sub(' ', comments)
-    # Look for strings with @ in the middle
-    comments = re.compile('[^\s]+@[^\s]+').sub(' ', comments)
-    # Handle $ sign
-    comments = re.compile('[$]+').sub(' ', comments)
-    # get rid of repeat letters
-    temp = " "
-    for letter in comments:
-        if (letter != temp[-1]):
-            temp += letter
-    comments = temp
-    # get rid of any punctuation
-    comments = re.split('[ #%^&*@$/#.-:&*+=\[\]?!(){},\'">_<;%\n\r\t\|]', comments)
-    # remove any empty word string
-    comments = [word for word in comments if len(word) > 0]
-
-    #add y vao cuoi
-    comments += y
-
-    return comments;
-
-def bags_of_words():
-    #Load data
-    trainData = open("trainData.txt", encoding="utf8")
-    Data = str(trainData.read())
-
-    #Load vocabList
-    vocabList = open("vocabulary.txt",  encoding="utf8")
-    vocabList = str(vocabList.read()).split("\n")
-
-    #Digitize data
-    Data = Data.split("train")[1:]
-    n = len(vocabList)  #numbers of features 
-    m = len(Data)       #numbers of examples = 11261
-
-    word_indices = [[0 for i in range(n)] for i in range(m)]
-    for i in range(m):
-        Data[i] = preprocess_data(Data[i])
-
-        for j in range(n):
-            if vocabList[j] in Data[i]:
-                word_indices[i][j] += 1
-
-        word_indices[i][n-1] = int(float(Data[i][-1])) #luu lai y
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from keras.preprocessing import sequence
+from tqdm import tqdm
+from sklearn.model_selection import train_test_split
 
 
-    #Output data
-    word_indices = str(word_indices)
-    word_indices = word_indices[1:len(word_indices)-1]
-    OutputFile = open("digitizedTrainData.txt", "w")
-    for i in range(len(word_indices)):
-        if word_indices[i] == "[" or word_indices[i] == " " or word_indices[i] == "]": 
-            pass
-        elif word_indices[i] == "," and word_indices[i-1] == "]": 
-            OutputFile.write("\n")
-        else: 
-            OutputFile.write(word_indices[i])
-
-    print("Da in du lieu vao digitizedTrainData.txt thanh cong!")
-
-    #Close file
-    trainData.close()
-    OutputFile.close()
+# In[3]:
 
 
-def sigmoid(z):
-    return(1 / (1 + np.exp(-z)))
+#load data
+df = pd.read_csv('unprocessData.csv')
+data = df.values
 
-def cost_function(theta, X, y, Lambda = 0.1):
-    m = y.size
-    h = sigmoid(X.dot(theta))
 
-    J = -1*(1/m)*(np.log(h).T.dot(y)+np.log(1-h).T.dot(1-y)) + (Lambda/(2*m))*np.sum(np.square(theta[1:]))
-    
-    if np.isnan(J[0]):
-        return(np.inf)
-    return(J[0])
+# In[4]:
 
-def gradient(theta, X, y, Lambda = 0.1):
-    m = y.size
-    h = sigmoid(X.dot(theta.reshape(-1,1)))
 
-    grad = (1/m)*X.T.dot(h-y) + (Lambda/m)*np.r_[[[0]],theta[1:].reshape(-1,1)]
+#chia data
+reviews = data[:, 1]
+labels = data[:, 2]
 
-    return(grad.flatten())
 
-def predict(theta, X, threshold=0.3):
-    p = sigmoid(X @ theta.T) >= threshold
-    return(p.astype('int'))
+# In[5]:
 
-def train_model():
-    #train theta to minimize costFunction on trainData
-        #Load data
-    data = np.loadtxt('digitizedTrainData.txt', delimiter=',')
-    X = np.c_[np.ones((data.shape[0],1)), data[:,0:data.shape[1]-1]]
-    y = np.c_[ data[:,data.shape[1]-1:] ]
-        #Train
-    initial_theta = np.zeros(X.shape[1])
-    res = minimize(cost_function, initial_theta, args=(X,y), method=None, jac=gradient, options={'maxiter':400})
-    p = predict(res.x, X) 
-    print('Train accuracy: {}%'.format(100*sum(p == y.ravel())/p.size)) 
-    
-    #Test theta on testData
-    data = np.loadtxt('testData.txt', delimiter=',')
-    X_test = np.c_[np.ones((data.shape[0],1)), data[:,0:data.shape[1]-1]]
-    y_test = np.c_[ data[:,data.shape[1]-1:] ]
-    p = predict(res.x, X_test) 
-    print('Test accuracy:  {}%'.format(100*sum(p == y_test.ravel())/p.size))
-    
-    #Luu lai ket qua theta
-    optimizeTheta = open("optimizedTheta.txt", "w")
-    for i in str(res.x)[1:-1]:
-        if i != "\n":
-            optimizeTheta.write(i)
-    print("Da luu theta thanh cong!")
-    optimizeTheta.close()
 
-bags_of_words()
-train_model()
+# Split the dataset into training and testing sets
+reviews, reviews_test, labels, labels_test = train_test_split(reviews, labels, test_size=0.3, random_state=42)
+
+
+# In[6]:
+
+
+input_gensim = []
+for review in reviews:
+    input_gensim.append(review.split())
+
+model = Word2Vec(input_gensim, vector_size=200, window=5, min_count=0, workers=4, sg=1)
+model.wv.save("word.model")
+
+model_embedding = word2vec.KeyedVectors.load('./word.model')
+
+
+# In[8]:
+
+
+max_seq = 200
+embedding_size = 200
+word_labels = []
+for word in list(model_embedding.key_to_index.keys()):
+    word_labels.append(word)
+
+
+# In[9]:
+
+
+def comment_embedding(comment):
+    matrix = np.zeros((max_seq, embedding_size))
+    words = comment.split()
+    lencmt = len(words)
+
+    for i in range(max_seq):
+        indexword = i % lencmt
+        if (max_seq - i < lencmt):
+            break
+        if (words[indexword] in word_labels):
+            matrix[i] = model_embedding[words[indexword]]
+    matrix = np.array(matrix)
+    return matrix
+
+
+sequence_length = 200   #số lượng từ lớn nhất trong 1 comment
+embedding_size = 200    #1 từ -> vector(128, ), 1 comment -> (200, 128)
+num_classes = 3
+filter_sizes = 3
+num_filters = 150
+epochs = 5
+batch_size = 30
+learning_rate = 0.01
+dropout_rate = 0.5
+
+
+# In[10]:
+
+
+train_data = []
+label_data = []
+
+test_data = []
+label_test_data = []
+
+for x in tqdm(reviews):
+    train_data.append(comment_embedding(x))
+train_data = np.array(train_data)
+
+for x in tqdm(reviews_test):
+    test_data.append(comment_embedding(x))
+test_data = np.array(test_data)
+
+
+# In[11]:
+
+
+for y in tqdm(labels):
+    label_ = np.zeros(3)
+    try:
+        label_[int(y)] = 1
+    except:
+        label_[0] = 1
+    label_data.append(label_)
+
+
+for y in tqdm(labels_test):
+    label_ = np.zeros(3)
+    try:
+        label_[int(y)] = 1
+    except:
+        label_[0] = 1
+    label_test_data.append(label_)
+
+
+# In[12]:
+
+
+x_train = train_data.reshape(train_data.shape[0], sequence_length, embedding_size, 1).astype('float32')
+y_train = np.array(label_data)
+
+
+# In[13]:
+
+
+x_test = test_data.reshape(test_data.shape[0], sequence_length, embedding_size, 1).astype('float32')
+y_test = np.array(label_test_data)
+
+
+# In[14]:
+
+
+print("Data: steam, ALgorithm: W2v + CNN")
+
+
+# In[15]:
+
+
+x_train.shape
+
+
+# In[16]:
+
+
+# Define model
+model = keras.Sequential()
+model.add(layers.Convolution2D(num_filters, (filter_sizes, embedding_size),
+                        padding='valid',
+                        input_shape=(sequence_length, embedding_size, 1), activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(198, 1)))
+model.add(layers.Dropout(dropout_rate))
+model.add(layers.Flatten())
+model.add(layers.Dense(100, activation='relu'))
+model.add(layers.Dense(3, activation='softmax'))
+# Train model
+adam = tf.optimizers.Adam()
+model.compile(loss='categorical_crossentropy',
+              optimizer=adam,
+              metrics=['accuracy'])
+print(model.summary())
+
+
+model.fit(x = x_train, y = y_train, batch_size = batch_size, verbose=1, epochs=epochs, validation_data=(x_test, y_test))
+
+model.save('models.h5')
+
