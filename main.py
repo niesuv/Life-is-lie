@@ -214,6 +214,30 @@ def game_frame():
 				self.remove(self.item_group)
 				if my_game.music:
 					my_game.collect_sound.play()
+	
+	class Text:
+		def __init__(self, text, font, x, y):
+			self.text = text
+			self.font = font
+			self.color = YELLOW
+			self.font = font
+			self.text_surface = self.font.render(self.text, True, self.color)
+			self.text_rect = self.text_surface.get_rect()
+			self.text_rect.topleft = (x, y)
+			self.hover = False
+			self.click = False
+		
+		def draw(self, surface):
+			if self.hover:
+				self.color = GREEN
+			elif self.click:
+				self.color = GREEN
+			else:
+				self.color = YELLOW
+			
+			self.text_surface = self.font.render(self.text, True, self.color)
+			
+			surface.blit(self.text_surface, self.text_rect)
 
 
 	class Game():
@@ -289,7 +313,7 @@ def game_frame():
 			# Load show set
 			images = []
 			for i in range(6):
-				image = pygame.image.load(f"./asset/set/set_avt/all_set{i + 1}.png")
+				image = pygame.image.load(f"./asset/set/set_avt/all_set_{i + 1}.png")
 				image = pygame.transform.scale(image,
 											(int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
 				images.append(image)
@@ -360,14 +384,6 @@ def game_frame():
 			#finish
 			self.has_load_skill = True
 		def load_race(self):
-			
-			self.map_length = 4
-			# Set n road continous
-			self.road = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}.png"),
-											(self.WINDOW_WIDTH * self.map_length, self.WINDOW_HEIGHT))
-			self.map_rect = self.road.get_rect()
-			self.map_rect.topleft = (0, 0)
-			
 			# Set back map
 			self.backmap = pygame.image.load(f"./asset/map/backmap{self.map}.jpg")
 			scale = self.backmap.get_width() / self.backmap.get_height()
@@ -861,6 +877,9 @@ def game_frame():
 			else:
 				print(u"\nCảm ơn bạn đã tham gia trò chơi Silly Squad <3\n")
 		
+
+	
+		
 		def show_bet(self):
 			self.load_race_thread = threading.Thread(target=self.load_race)
 			self.load_race_thread.start()
@@ -903,6 +922,13 @@ def game_frame():
 										(int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
 			go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
 									image, 1)
+			dis = 15.0 / 1200 * self.WINDOW_WIDTH
+			dis_ = 15.0 / 675 * self.WINDOW_HEIGHT
+			short_map = Text("SHORT MAP", self.font32,text_box.right + dis , gold_text_rect.top - dis_)
+			medium_map = Text("MEDIUM MAP", self.font32, text_box.right + dis , short_map.text_rect.bottom + dis_)
+			medium_map.click = True
+			long_map = Text("LONG MAP", self.font32, text_box.right + dis, medium_map.text_rect.bottom + dis_)
+			map_choose = [short_map, medium_map, long_map]
 			
 			# User click the thumnail
 			have_click = False
@@ -919,8 +945,23 @@ def game_frame():
 					if event.type == pygame.QUIT:
 						pygame.quit()
 						sys.exit()
+					if event.type == pygame.MOUSEMOTION:
+						pos = pygame.mouse.get_pos()
+						for map in map_choose:
+							if map.text_rect.collidepoint(pos):
+								map.hover = True
+							else:
+								map.hover = False
+					
 					if event.type == pygame.MOUSEBUTTONDOWN:
 						pos = pygame.mouse.get_pos()
+						#Check click map choose
+						for map in map_choose:
+							if map.text_rect.collidepoint(pos):
+								map.click = True
+								for submap in map_choose:
+									if submap != map:
+										submap.click = False
 						# Check click GO BaCK
 						if go_back_button.rect.collidepoint(pos):
 							betting = False
@@ -946,6 +987,10 @@ def game_frame():
 										self.bet = i + 1
 										break
 								self.bet_money = int(user_text)
+								for i in range(3):
+									if map_choose[i].click == True:
+										self.map_length = i + 2
+										break
 								self.race()
 					
 					if event.type == pygame.KEYDOWN:
@@ -958,6 +1003,10 @@ def game_frame():
 								elif event.key == pygame.K_RETURN:
 									if not error and have_click:
 										self.bet_money = int(user_text)
+										for i in range(3):
+											if map_choose[i].click == True:
+												self.map_length = i + 2
+												break
 										self.race()
 				
 				# Check error
@@ -984,6 +1033,8 @@ def game_frame():
 				bet_text = self.font32.render(f' BET: {user_text}', True, color)  # Update HUD
 				self.display_surface.blit(gold_text, gold_text_rect)
 				self.display_surface.blit(bet_text, bet_text_rect)
+				for map in map_choose:
+					map.draw(self.display_surface)
 				pygame.draw.rect(self.display_surface, color, text_box, 3)
 				
 				pygame.display.update()
@@ -1062,7 +1113,7 @@ def game_frame():
 			
 			# cong tien
 			if self.bet == self.rank[0].index:
-				self.gold += self.bet_money
+				self.gold += self.bet_money * (self.map_length - 1)
 				sign = 1
 			else:
 				self.gold -= self.bet_money
@@ -1303,8 +1354,13 @@ def game_frame():
 			self.scroll_map = int(2 * my_game.WINDOW_WIDTH / 1200 * 1.0)
 			self.scroll_map_bool = True
 			
-			# count down
+			# Set n road continous
+			self.road = pygame.transform.scale(pygame.image.load(f"./asset/map/{self.map}-{self.map_length}.png"),
+			                                   (self.WINDOW_WIDTH * self.map_length, self.WINDOW_HEIGHT))
+			self.map_rect = self.road.get_rect()
+			self.map_rect.topleft = (0, 0)
 			
+			# count down
 			self.count_down()
 			if self.music:
 				self.race_music.play()
