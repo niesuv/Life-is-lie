@@ -1212,8 +1212,8 @@ def game_frame():
 				gold_box_rect.topleft = (int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75))
 				self.display_surface.blit(gold_box, gold_box_rect)
 				
-				if self.bet == self.rank[0].index:
-					bet_box = self.font32.render(f'+ {self.bet_money}', True, GREEN)
+				if self.bet == self.rank[0].index: #win
+					bet_box = self.font32.render(f'+ {self.bet_money * (self.map_length - 1)}', True, GREEN)
 				else:
 					bet_box = self.font32.render(f'- {self.bet_money}', True, RED)
 				bet_box_rect = bet_box.get_rect()
