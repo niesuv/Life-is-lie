@@ -807,8 +807,8 @@ def game_frame():
 		
 		def comment_embedding(self, comment):
 			max_seq = 200
-			embedding_size = 200
-			model_embedding = keyedvectors.KeyedVectors.load('./asset./AI/word.model')
+			embedding_size = 12
+			model_embedding = keyedvectors.KeyedVectors.load('./asset./AI/word_fasttext.model')
     
 			word_labels = []
 			for word in list(model_embedding.key_to_index.keys()):
@@ -1446,7 +1446,7 @@ def game_frame():
 								my_game.collect_sound.play()
 				
 					
-					if event.type == pygame.KEYDOWN:
+					if event.type == pygame.KEYDOWN and active:
 						if event.key == pygame.K_BACKSPACE:
 							# Go dau tieng viet
 							if event.unicode.isalpha():
