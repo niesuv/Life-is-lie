@@ -1472,7 +1472,9 @@ def game_frame():
 								
 								if event.unicode == "ư" and user_text.rfind("ư") + 1 <= len(user_text) - 1:
 									if user_text[user_text.rfind("ư") + 1] == "o":
-										list(user_text)[user_text.rfind("ư") + 1] = "ơ"
+										vi_tri = user_text.rfind("ư") + 1
+										user_text = list(user_text)
+										user_text[vi_tri] = "ơ"
 										user_text = ''.join(user_text)
 								continue
 							else:
