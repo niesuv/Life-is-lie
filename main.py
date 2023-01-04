@@ -1,8 +1,10 @@
 import threading
 import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
-from keras.models import load_model
-import gensim.models.keyedvectors as keyedvectors
+from knight_hunting import sub_game as game1
+from cheems import  sub_game as game2
+#from keras.models import load_model
+#import gensim.models.keyedvectors as keyedvectors
 
 userdata = []
 pow = []
@@ -458,11 +460,21 @@ def game_frame():
 			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
 			shop_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.6,
 			                        image, 1)
+			
 			#help button
 			image = pygame.image.load("./asset/button/button_help.png")
+			scale = image.get_height() / image.get_width()
+			image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH)
+			                                       , int(scale * 0.15 * self.WINDOW_WIDTH)))
+			
+			help_button = Button(int((1 - 0.03 - 0.075) * self.WINDOW_WIDTH)
+			                     , int(0.88 * self.WINDOW_HEIGHT), image, 1)
+
+			#Mini game button
+			image = pygame.image.load("./asset/button/button_minigame.png")
 			scale = image.get_width() / image.get_height()
 			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
-			help_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.76,
+			mini_game_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.76,
 			                        image, 1)
 			#game_text
 			image = pygame.image.load("./asset/image/lifeislie.png")
@@ -501,12 +513,15 @@ def game_frame():
 								self.show_shop()
 						if setting_button.rect.collidepoint(pos):
 							self.show_setting()
-						
+						if mini_game_button.rect.collidepoint(pos):
+							self.show_minigame()
 				
 				start_button.draw(self.display_surface)
 				setting_button.draw(self.display_surface)
 				help_button.draw(self.display_surface)
 				shop_button.draw(self.display_surface)
+				mini_game_button.draw(self.display_surface)
+				
 				self.display_surface.blit(life_is_lie, life_is_lie_rect)
 				pygame.display.update()
 				clock.tick(FPS)
@@ -544,7 +559,73 @@ def game_frame():
 				pygame.display.update()
 				clock.tick(FPS)
 		
-		
+		def show_minigame(self):
+			
+			# GO BACK BUTTON
+			image = pygame.image.load("./asset/button/go_back_button.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image,
+			                               (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+			go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+			                        int(0.075 * self.WINDOW_HEIGHT),
+			                        image, 1)
+			#button start game
+			image = pygame.image.load("./asset/button/button_start.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image , (self.WINDOW_HEIGHT * .12 * scale, self.WINDOW_HEIGHT * .12))
+			left_button = Button(int(0.26 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84) ,image , 1)
+			right_button = Button(int(0.73 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84) ,image , 1)
+			
+			
+			#image mini game
+			image = pygame.image.load("./asset/image/gold.png")
+			scale = image.get_width() / image.get_height()
+			knight_image = pygame.transform.scale(image,(int(self.WINDOW_HEIGHT * 0.45 * scale)
+			                                             , int(self.WINDOW_HEIGHT * 0.45) ) )
+			knight_image_rect = knight_image.get_rect()
+			knight_image_rect.center = (0.26 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT *0.4)
+			
+			image = pygame.image.load("./asset/image/gold.png")
+			scale = image.get_width() / image.get_height()
+			cheems_image = pygame.transform.scale(image,(int(self.WINDOW_HEIGHT * 0.45 * scale)
+			                                             , int(self.WINDOW_HEIGHT * 0.45) ) )
+			cheems_image_rect = cheems_image.get_rect()
+			cheems_image_rect.center = (0.73 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT *0.4)
+			
+			playing = True
+			while playing:
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						pygame.quit()
+						sys.exit()
+					if event.type == pygame.MOUSEBUTTONDOWN:
+						pos = pygame.mouse.get_pos()
+						# Check click Map
+						if go_back_button.rect.collidepoint(pos):
+							playing = False
+						#Check click game 1
+						if left_button.rect.collidepoint(pos):
+							self.menu_music.stop()
+							self.gold = game1(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.display_surface, self.gold)
+							if self.music:
+								self.menu_music.play(-1)
+						#CHeck click game 2
+						if right_button.rect.collidepoint(pos):
+							self.menu_music.stop()
+							self.gold = game2(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.gold)
+							if self.music:
+								self.menu_music.play(-1)
+				self.show_back_ground()
+				#blit game image
+				self.display_surface.blit(knight_image, knight_image_rect)
+				self.display_surface.blit(cheems_image, cheems_image_rect)
+				
+				# DRAW BUTTON
+				go_back_button.draw(self.display_surface)
+				left_button.draw(self.display_surface)
+				right_button.draw(self.display_surface)
+				pygame.display.update()
+				clock.tick(FPS)
 		
 		def show_shop(self):
 			# GO BACK BUTTON
@@ -736,18 +817,15 @@ def game_frame():
 		
 		def show_resolution(self):
 			# resolution option button
-			image = pygame.image.load("./asset/button/600x330.png")
+			image = pygame.image.load("./asset/button/800x450.png")
 			scale = image.get_width() / image.get_height()
 			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
-			btn_600x330 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3, image, 1)
-			
-			image = pygame.image.load("./asset/button/800x450.png")
-			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
-			btn_800x450 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + self.WINDOW_HEIGHT // 6, image, 1)
+			btn_800x450 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3, image, 1)
 			
 			image = pygame.image.load("./asset/button/1200x675.png")
 			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
-			btn_1200x675 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + 2 * self.WINDOW_HEIGHT // 6, image, 1)
+			btn_1200x675 = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 3 + self.WINDOW_HEIGHT // 6, image, 1)
+			
 			
 			# GO BACK BUTTON
 			image = pygame.image.load("./asset/button/go_back_button.png")
@@ -767,16 +845,6 @@ def game_frame():
 						# Check click Map
 						if go_back_button.rect.collidepoint(pos):
 							resulutioning = False
-						if btn_600x330.rect.collidepoint(pos):
-							self.WINDOW_WIDTH = 600
-							self.WINDOW_HEIGHT = 337
-							self.display_surface = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-							self.has_load_bet = False
-							self.has_load_map = False
-							self.has_load_set = False
-							self.has_load_shop = False
-							self.show_main_menu()
-						
 						if btn_800x450.rect.collidepoint(pos):
 							self.WINDOW_WIDTH = 800
 							self.WINDOW_HEIGHT = 450
@@ -799,7 +867,6 @@ def game_frame():
 				self.show_back_ground()
 				# DRAW BUTTON
 				go_back_button.draw(self.display_surface)
-				btn_600x330.draw(self.display_surface)
 				btn_800x450.draw(self.display_surface)
 				btn_1200x675.draw(self.display_surface)
 				pygame.display.update()
@@ -871,9 +938,6 @@ def game_frame():
 		
 			return result
 		
-
-	
-		
 		def show_bet(self):
 			self.load_race_thread = threading.Thread(target=self.load_race)
 			self.load_race_thread.start()
@@ -889,7 +953,7 @@ def game_frame():
 			gold_text_rect = gold_text.get_rect()
 			gold_text_rect.topleft = (0.15 * self.WINDOW_WIDTH, int(0.62 * self.WINDOW_HEIGHT))
 			
-			user_text = "100"
+			user_text = f"{min(100, self.gold // 2)}"
 			
 			bet_text = self.font32.render(f' BET: {user_text}', True, YELLOW)
 			bet_text_rect = bet_text.get_rect()
@@ -1138,9 +1202,13 @@ def game_frame():
 			
 			image = pygame.image.load("./asset/button/play_now_button.png")
 			scale = image.get_height() / image.get_width()
-			image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH), int(scale * 0.15 * self.WINDOW_WIDTH)))
-			play_button = Button(int(0.8 * self.WINDOW_WIDTH), int(0.72 * self.WINDOW_HEIGHT), image, 1)
-			play_button.rect.bottomright = (self.WINDOW_WIDTH - 10, self.WINDOW_HEIGHT - 10)
+			image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH)
+			                                       , int(scale * 0.15 * self.WINDOW_WIDTH)))
+			
+			play_button = Button( int( (1 - 0.03 - 0.075) * self.WINDOW_WIDTH)
+			                     ,int(0.88 * self.WINDOW_HEIGHT) , image, 1)
+
+			
 			
 			player = self.rank[0]
 			scale = player.image.get_height() / player.image.get_width()
@@ -1183,7 +1251,18 @@ def game_frame():
 			player.rect.bottom = 0.5 * self.WINDOW_HEIGHT
 			player.rect.centerx = 0.15 * self.WINDOW_WIDTH
 			
+			gold_box = self.font32.render(f'GOLD: {self.gold}', True, YELLOW)
+			gold_box_rect = gold_box.get_rect()
+			gold_box_rect.topleft = (int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75))
 			
+			if self.bet == self.rank[0].index:
+				bet_box = self.font32.render(f'+ {self.bet_money}', True, GREEN)
+			else:
+				bet_box = self.font32.render(f'- {self.bet_money}', True, RED)
+				
+			bet_box_rect = bet_box.get_rect()
+			bet_box_rect.topleft = (
+				int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75) + gold_box_rect.height)
 			
 			showing = True
 			while showing:
@@ -1207,18 +1286,10 @@ def game_frame():
 				self.player_group.draw(self.display_surface)
 				
 				# show money
-				gold_box = self.font32.render(f'GOLD: {self.gold}', True, YELLOW)
-				gold_box_rect = gold_box.get_rect()
-				gold_box_rect.topleft = (int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75))
+
 				self.display_surface.blit(gold_box, gold_box_rect)
 				
-				if self.bet == self.rank[0].index:
-					bet_box = self.font32.render(f'+ {self.bet_money}', True, GREEN)
-				else:
-					bet_box = self.font32.render(f'- {self.bet_money}', True, RED)
-				bet_box_rect = bet_box.get_rect()
-				bet_box_rect.topleft = (
-					int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75) + gold_box_rect.height)
+				
 				self.display_surface.blit(bet_box, bet_box_rect)
 				
 				#AI_evaluate response
