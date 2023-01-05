@@ -3,7 +3,7 @@ import sys
 import pygame, random
 
 
-def sub_game(width, height, gold):
+def sub_game(width, height, gold, self=None):
 	
 	PINK = (158, 50, 168)
 	GREEN = (30, 189, 38)
@@ -24,7 +24,7 @@ def sub_game(width, height, gold):
 			self.pos_hover = (x, y - 3)
 			self.origin_rect = self.image.get_rect()
 			self.origin_rect.center = (x, y)
-		
+
 		def draw(self, surface):
 			surface.blit(self.image, self.rect)
 			pos = pygame.mouse.get_pos()
@@ -77,6 +77,7 @@ def sub_game(width, height, gold):
 	pygame.mixer.music.set_volume(.4)
 	
 	# Load DOG
+	bg = pygame.image.load("./asset3/bg.png")
 	right_dog = pygame.image.load("./asset3/right_dog.png")
 	left_dog = pygame.image.load("./asset3/left_dog.png")
 	dog = right_dog
@@ -98,7 +99,7 @@ def sub_game(width, height, gold):
 	live_text_rect = live_text.get_rect()
 	live_text_rect.topright = (WINDOW_WIDTH - 32, 32)
 	
-	game_over_text = font2.render("GAME OVER, PRESS ENTER TO CONTINUE!", True, ORANGE, GREEN)
+	game_over_text = font2.render("GAME OVER, PRESS ENTER TO CONTINUE!", True, ORANGE)
 	game_over_text_rect = game_over_text.get_rect()
 	game_over_text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)
 	
@@ -171,9 +172,10 @@ def sub_game(width, height, gold):
 		display_surface.fill(BLACK)
 		
 		# Load Text ReRender
-		point_text = font.render(f'Point:  {point}', True, GREEN, BLACK)
-		boost_text = font.render(f'BOOST ENERGY:  {boost_level}', True, ORANGE, BLACK)
-		live_text = font.render(f'Lives:  {lives}', True, GREEN, BLACK)
+		point_text = font.render(f'Point:  {point}', True, GREEN)
+		boost_text = font.render(f'BOOST ENERGY:  {boost_level}', True, ORANGE)
+		live_text = font.render(f'Lives:  {lives}', True, GREEN)
+		display_surface.blit(bg, (0,0))
 		display_surface.blit(boost_text, boost_text_rect)
 		display_surface.blit(point_text, point_text_rect)
 		display_surface.blit(live_text, live_text_rect)
@@ -186,7 +188,6 @@ def sub_game(width, height, gold):
 			gold_text = font.render(f'GOLD: {return_gold}', True, YELLOW)
 			gold_text_rect = gold_text.get_rect()
 			gold_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), int(WINDOW_HEIGHT * 0.75))
-			
 			# point text
 			bet_text = font.render(f'+ {point}', True, GREEN)
 			return_gold += point

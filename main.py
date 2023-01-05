@@ -3,8 +3,8 @@ import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
 from cheems import  sub_game as game2
-#from keras.models import load_model
-#import gensim.models.keyedvectors as keyedvectors
+from keras.models import load_model
+import gensim.models.keyedvectors as keyedvectors
 
 userdata = []
 pow = []
@@ -578,14 +578,14 @@ def game_frame():
 			
 			
 			#image mini game
-			image = pygame.image.load("./asset/image/gold.png")
+			image = pygame.image.load("./asset/image/minigame1.png")
 			scale = image.get_width() / image.get_height()
 			knight_image = pygame.transform.scale(image,(int(self.WINDOW_HEIGHT * 0.45 * scale)
 			                                             , int(self.WINDOW_HEIGHT * 0.45) ) )
 			knight_image_rect = knight_image.get_rect()
 			knight_image_rect.center = (0.26 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT *0.4)
 			
-			image = pygame.image.load("./asset/image/gold.png")
+			image = pygame.image.load("./asset/image/minigame2.png")
 			scale = image.get_width() / image.get_height()
 			cheems_image = pygame.transform.scale(image,(int(self.WINDOW_HEIGHT * 0.45 * scale)
 			                                             , int(self.WINDOW_HEIGHT * 0.45) ) )
