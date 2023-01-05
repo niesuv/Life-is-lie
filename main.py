@@ -2,7 +2,7 @@ import threading
 import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
-from cheems import  sub_game as game2
+from cheems import sub_game as game2
 from keras.models import load_model
 import gensim.models.keyedvectors as keyedvectors
 
@@ -83,7 +83,7 @@ def get_data_playing():
 	global userdata, history
 
 	if (len(userdata[pos]) < 4):
-		userdata[pos].append(10000)
+		userdata[pos].append(0)
 		userdata[pos].append(0)
 		return
 
@@ -607,12 +607,14 @@ def game_frame():
 						if left_button.rect.collidepoint(pos):
 							self.menu_music.stop()
 							self.gold = game1(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.display_surface, self.gold)
+							save_data_playing(self.gold, self.own_item, self.history)
 							if self.music:
 								self.menu_music.play(-1)
 						#CHeck click game 2
 						if right_button.rect.collidepoint(pos):
 							self.menu_music.stop()
 							self.gold = game2(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.gold)
+							save_data_playing(self.gold, self.own_item, self.history)
 							if self.music:
 								self.menu_music.play(-1)
 				self.show_back_ground()
@@ -1885,16 +1887,16 @@ class signup():
 		tk.Label(self.frame, image=signup_bg).place(x=0,y=0)
 
 		# username
-		self.username_entry = tk.Entry(self.frame, font=("Calibri", 13), fg="#646060")
+		self.username_entry = tk.Entry(self.frame, font=("Calibri", 14), fg="#646060")
 		self.username_entry.focus()
 		self.username_entry.place(x=776, y=155, width=366, height=36)
 
 		# email
-		self.email_entry = tk.Entry(self.frame, font=("Calibri", 13), fg="#646060")
+		self.email_entry = tk.Entry(self.frame, font=("Calibri", 14), fg="#646060")
 		self.email_entry.place(x=776, y=255, width=366, height=36)
 
 		# password
-		self.password_entry = tk.Entry(self.frame, font=("Calibri", 13), show="•", fg="#646060")
+		self.password_entry = tk.Entry(self.frame, font=("Calibri", 14), show="•", fg="#646060")
 		self.password_entry.place(x=776, y=355, width=366, height=36)
 		self.password_state = tk.Button(
 			self.frame, 
@@ -1907,7 +1909,7 @@ class signup():
 		self.password_state.place(x=1100, y=363)
 		
 		# confirm password
-		self.repassword_entry = tk.Entry(self.frame, font=("Calibri", 13), show="•", fg="#646060")
+		self.repassword_entry = tk.Entry(self.frame, font=("Calibri", 14), show="•", fg="#646060")
 		self.repassword_entry.place(x=776, y=455, width=366, height=36)
 		self.repassword_state = tk.Button(
 			self.frame, 
@@ -2104,12 +2106,12 @@ class login():
 		tk.Label(self.frame, image=login_bg).place(x=0,y=0)
 
 		# username
-		self.username_entry = tk.Entry(self.frame, font=("Calibri", 13), fg="#646060")
+		self.username_entry = tk.Entry(self.frame, font=("Calibri", 14), fg="#646060")
 		self.username_entry.focus()
 		self.username_entry.place(x=776, y=155, width=366, height=36)
 
 		# password
-		self.password_entry = tk.Entry(self.frame, font=("Calibri", 13), show="•", fg="#646060")
+		self.password_entry = tk.Entry(self.frame, font=("Calibri", 14), show="•", fg="#646060")
 		self.password_entry.place(x=776, y=255, width=366, height=36)
 		self.password_state = tk.Button(
 			self.frame, 
@@ -2221,16 +2223,16 @@ class reset_password:
 		tk.Label(self.frame, image=reset_password_bg).place(x=0,y=0)
 
 		# username
-		self.username_entry = tk.Entry(self.frame, font=("Calibri", 13), fg="#646060")
+		self.username_entry = tk.Entry(self.frame, font=("Calibri", 14), fg="#646060")
 		self.username_entry.focus()
 		self.username_entry.place(x=776, y=155, width=366, height=36)
 
 		# email
-		self.email_entry = tk.Entry(self.frame, font=("Calibri", 13), fg="#646060")
+		self.email_entry = tk.Entry(self.frame, font=("Calibri", 14), fg="#646060")
 		self.email_entry.place(x=776, y=255, width=366, height=36)
 
 		# password
-		self.password_entry = tk.Entry(self.frame, font=("Calibri", 13), show="•", fg="#646060")
+		self.password_entry = tk.Entry(self.frame, font=("Calibri", 14), show="•", fg="#646060")
 		self.password_entry.place(x=776, y=355, width=366, height=36)
 		self.password_state = tk.Button(
 			self.frame, 
@@ -2243,7 +2245,7 @@ class reset_password:
 		self.password_state.place(x=1100, y=363)
 		
 		# confirm password
-		self.repassword_entry = tk.Entry(self.frame, font=("Calibri", 13), show="•", fg="#646060")
+		self.repassword_entry = tk.Entry(self.frame, font=("Calibri", 14), show="•", fg="#646060")
 		self.repassword_entry.place(x=776, y=455, width=366, height=36)
 		self.repassword_state = tk.Button(
 			self.frame, 
