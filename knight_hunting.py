@@ -140,14 +140,14 @@ def sub_game(width, height, display, gold):
 			bet_text = font.render(f'+ {self.score // 5}', True, GREEN)
 			self.gold += self.score // 5
 
-			bet_text_rect = bet_text.get_rect()
-			bet_text_rect.topleft = ( int(WINDOW_WIDTH * 0.03)
-			                         , int(WINDOW_HEIGHT * 0.75) + gold_text_rect.height)
-
 			#Gold text
 			gold_text = font.render(f'GOLD: {self.gold}', True, YELLOW)
 			gold_text_rect = gold_text.get_rect()
 			gold_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), int(WINDOW_HEIGHT * 0.75))
+
+			bet_text_rect = bet_text.get_rect()
+			bet_text_rect.topleft = ( int(WINDOW_WIDTH * 0.03)
+			                         , int(WINDOW_HEIGHT * 0.75) + gold_text_rect.height)
 			
 			#Back btn
 			image = pygame.image.load("./asset/button/button_back.png")
@@ -341,7 +341,6 @@ def sub_game(width, height, display, gold):
 		# Update display and clock
 		pygame.display.update()
 		clock.tick(FPS)
-	
 	
 	return sub_game.gold
 

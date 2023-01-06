@@ -184,8 +184,8 @@ def sub_game(width, height, gold, self=None):
 		# Check lose
 		if lives == 0:
 			pause = True
-			# GOld text
-			gold_text = font.render(f'GOLD: {return_gold}', True, YELLOW)
+			# Gold text
+			gold_text = font.render(f'GOLD: {return_gold + point}', True, YELLOW)
 			gold_text_rect = gold_text.get_rect()
 			gold_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), int(WINDOW_HEIGHT * 0.75))
 			# point text
@@ -234,7 +234,8 @@ def sub_game(width, height, gold, self=None):
 					if event.type == pygame.MOUSEBUTTONDOWN:
 						pos = pygame.mouse.get_pos()
 						if back_button.rect.collidepoint(pos):
-							return gold
+							pygame.mixer.music.stop()
+							return return_gold
 		# Load the dog
 		display_surface.blit(dog, dog_rect)
 		display_surface.blit(meat, meat_rect)
@@ -242,4 +243,5 @@ def sub_game(width, height, gold, self=None):
 		# UPDATE DISPLAY AND SET CLOCK
 		pygame.display.update()
 		clock.tick(FPS)
+
 	
