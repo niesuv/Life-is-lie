@@ -2,7 +2,7 @@ import threading
 import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
-from cheems import sub_game as game2
+from cheems import  sub_game as game2
 from keras.models import load_model
 import gensim.models.keyedvectors as keyedvectors
 
@@ -205,24 +205,28 @@ def game_frame():
 					my_game.collect_sound.play()
 	
 	class Text:
-		def __init__(self, text, font, x, y):
+		def __init__(self, text, font, x, y, center = False, color = YELLOW, hover = True):
 			self.text = text
 			self.font = font
-			self.color = YELLOW
+			self.color = color
 			self.font = font
 			self.text_surface = self.font.render(self.text, True, self.color)
 			self.text_rect = self.text_surface.get_rect()
 			self.text_rect.topleft = (x, y)
+			self.need_hover = hover
+			if center:
+				self.text_rect.center = (x, y)
 			self.hover = False
 			self.click = False
 		
 		def draw(self, surface):
-			if self.hover:
-				self.color = GREEN
-			elif self.click:
-				self.color = GREEN
-			else:
-				self.color = YELLOW
+			if self.need_hover:
+				if self.hover:
+					self.color = GREEN
+				elif self.click:
+					self.color = GREEN
+				else:
+					self.color = YELLOW
 			
 			self.text_surface = self.font.render(self.text, True, self.color)
 			
@@ -382,10 +386,10 @@ def game_frame():
 			
 			#load
 			image = pygame.image.load(f"./asset/image/lucky_box.png")
-			scale = self.backmap.get_width() / self.backmap.get_height()
-			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT*0.08 * scale, self.WINDOW_HEIGHT*0.12))
-			self.use_item_button = Button((1-0.088)* self.WINDOW_WIDTH, (1-0.12)*self.WINDOW_HEIGHT,image , 1)
-			
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT*0.12 * scale, self.WINDOW_HEIGHT*0.12))
+			self.use_item_button = Button((1-0.084)* self.WINDOW_WIDTH, (1-0.12)*self.WINDOW_HEIGHT,image , 1)
+
 			# Add Character
 			self.player_group = pygame.sprite.Group()
 			for i in range(1, 6):
@@ -468,7 +472,16 @@ def game_frame():
 			
 			help_button = Button(int((1 - 0.03 - 0.075) * self.WINDOW_WIDTH)
 			                     , int(0.88 * self.WINDOW_HEIGHT), image, 1)
-
+			
+			#User button
+			image = pygame.image.load("./asset/button/button_user.png")
+			scale = image.get_height() / image.get_width()
+			image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH)
+			                                       , int(scale * 0.15 * self.WINDOW_WIDTH)))
+			
+			user_button = Button(int((0.03 + 0.075) * self.WINDOW_WIDTH)
+			                     , int(0.88 * self.WINDOW_HEIGHT), image, 1)
+			
 			#Mini game button
 			image = pygame.image.load("./asset/button/button_minigame.png")
 			scale = image.get_width() / image.get_height()
@@ -514,12 +527,15 @@ def game_frame():
 							self.show_setting()
 						if mini_game_button.rect.collidepoint(pos):
 							self.show_minigame()
-				
+						if user_button.rect.collidepoint(pos):
+							self.show_user()
+						
 				start_button.draw(self.display_surface)
 				setting_button.draw(self.display_surface)
 				help_button.draw(self.display_surface)
 				shop_button.draw(self.display_surface)
 				mini_game_button.draw(self.display_surface)
+				user_button.draw(self.display_surface)
 				
 				self.display_surface.blit(life_is_lie, life_is_lie_rect)
 				pygame.display.update()
@@ -553,6 +569,68 @@ def game_frame():
 				self.show_back_ground()
 				#show the help
 				self.display_surface.blit(help_image, (0,0))
+				# DRAW BUTTON
+				go_back_button.draw(self.display_surface)
+				pygame.display.update()
+				clock.tick(FPS)
+		
+		def show_user(self):
+			
+			# GO BACK BUTTON
+			image = pygame.image.load("./asset/button/go_back_button.png")
+			scale = image.get_width() / image.get_height()
+			image = pygame.transform.scale(image,
+			                               (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+			go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+			                        int(0.075 * self.WINDOW_HEIGHT),
+			                        image, 1)
+			
+			user_image = pygame.image.load("./asset/image/user_page.png")
+			user_image = pygame.transform.scale(user_image, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+			
+			#load history [self.bet, self.map_length, sign * self.bet_money]
+			type_map = ["SHORT MAP", "MEDIUM MAP", "LONG MAP"]
+			history_text = []
+			dis = self.WINDOW_WIDTH // 32 + 1
+			for i , item in enumerate(self.history):
+				temp = []
+				temp.append(Text(f"{abs(int(item[2]))}", self.font32 ,int(.13 * self.WINDOW_WIDTH)
+				                 ,int( (0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis ), center=True,hover=False))
+				
+				temp.append(Text(f"{type_map[int(item[1])-2]}", self.font32, int(.4 * self.WINDOW_WIDTH)
+				                 , int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,hover=False))
+				
+				temp.append(Text(f" {item[0]}", self.font32, int(.64 * self.WINDOW_WIDTH)
+				                 , int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,hover=False))
+				if (int(item[2]) > 0):
+					temp.append(Text(f"+{item[2]}", self.font32, int(.86 * self.WINDOW_WIDTH)
+				                 , int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True, color=GREEN
+					                 ,hover=False))
+				else:
+					temp.append(Text(f"{item[2]}", self.font32, int(.86 * self.WINDOW_WIDTH)
+					                 , int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,
+					                 color=RED,hover=False))
+				history_text.append(temp)
+			helping = True
+			while helping:
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						pygame.quit()
+						sys.exit()
+					if event.type == pygame.MOUSEBUTTONDOWN:
+						pos = pygame.mouse.get_pos()
+						# Check click Map
+						if go_back_button.rect.collidepoint(pos):
+							helping = False
+				
+				self.show_back_ground()
+				
+				#Draw the history skeletons
+				
+				self.display_surface.blit(user_image, (0 ,0))
+				for grp in history_text:
+					for item in grp:
+						item.draw(self.display_surface)
 				# DRAW BUTTON
 				go_back_button.draw(self.display_surface)
 				pygame.display.update()
@@ -1186,9 +1264,9 @@ def game_frame():
 				sign = -1
 				
 			#data variable-Save vo data nhe (self.gold, self.history)
-			if len(self.history) >= 5:
+			if len(self.history) >= 7:
 				self.history.pop()
-			self.history.insert(0,  [self.bet, self.map, sign * self.bet_money])
+			self.history.insert(0,  [self.bet, self.map_length, sign * self.bet_money])
 			
 			save_data_playing(self.gold, self.own_item, self.history)
 
@@ -1464,7 +1542,7 @@ def game_frame():
 				if len(self.rank) == 5:
 					self.show_victory()
 				# 1 Tang toc , 2 giam toc 3.dich chuyen 4. Quay lui 5. CHay ve dich 6 di ve nha
-				if random.randint(0, 1000) >= 995:
+				if random.randint(0, 1000) >= 996:
 					type = random.choices([1, 2, 3, 4, 5, 6], weights=[0.3, 0.3, .05, 0.3, .001, .001])[0]
 					if len(self.list_choice)  == 0:
 						self.list_choice = [1,2,3,4,5]

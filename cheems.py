@@ -62,7 +62,7 @@ def sub_game(width, height, gold, self=None):
 	DOG_DEFAULT_SPEED = 8
 	DOG_BOOST_SPEED = 20
 	DOG_BEGIN_BOOST_LEVEL = 100
-	DOG_LIVES = 4
+	DOG_LIVES = 2
 	boost_level = DOG_BEGIN_BOOST_LEVEL
 	point = 0
 	lives = DOG_LIVES
@@ -91,11 +91,11 @@ def sub_game(width, height, gold, self=None):
 	font = pygame.font.Font('./asset3/font.ttf', 32)
 	font2 = pygame.font.Font('./asset3/font.ttf', 46)
 	
-	point_text = font.render(f'Point:  {point}', True, GREEN, BLACK)
+	point_text = font.render(f'Point:  {point}', True, GREEN)
 	point_text_rect = point_text.get_rect()
 	point_text_rect.topleft = (32, 32)
 	
-	live_text = font.render(f'Lives:  {lives}', True, GREEN, BLACK)
+	live_text = font.render(f'Lives:  {lives}', True, GREEN)
 	live_text_rect = live_text.get_rect()
 	live_text_rect.topright = (WINDOW_WIDTH - 32, 32)
 	
@@ -103,7 +103,7 @@ def sub_game(width, height, gold, self=None):
 	game_over_text_rect = game_over_text.get_rect()
 	game_over_text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)
 	
-	boost_text = font.render(f'BOOST ENERGY:  {boost_level}', True, ORANGE, BLACK)
+	boost_text = font.render(f'BOOST ENERGY:  {boost_level}', True, ORANGE)
 	boost_text_rect = boost_text.get_rect()
 	boost_text_rect.centerx = WINDOW_WIDTH // 2
 	boost_text_rect.y = 32
@@ -118,6 +118,9 @@ def sub_game(width, height, gold, self=None):
 	dog_rect.bottom = WINDOW_HEIGHT
 	meat_rect.bottomleft = (random.randint(0, WINDOW_WIDTH - 72), 100)
 	burger_speed = BURGER_BEGIN_SPEED
+	
+	backgr = pygame.image.load("./asset/image/cheems_back.png")
+	backgr = pygame.transform.scale(backgr, (WINDOW_WIDTH, WINDOW_HEIGHT));
 	
 	# MAIN GAME LOOP
 	running = True
@@ -169,7 +172,7 @@ def sub_game(width, height, gold, self=None):
 			meat_rect.bottomleft = (random.randint(0, WINDOW_WIDTH - 72), 100)
 		
 		# Refresh the SCREEN
-		display_surface.fill(BLACK)
+		display_surface.blit(backgr, (0, 0))
 		
 		# Load Text ReRender
 		point_text = font.render(f'Point:  {point}', True, GREEN)
@@ -204,7 +207,7 @@ def sub_game(width, height, gold, self=None):
 			
 			back_button = Button(int((1 - 0.03 - 0.075) * WINDOW_WIDTH)
 			                     , int(0.88 * WINDOW_HEIGHT), image, 1)
-			
+
 			game_over_sound.play()
 			while pause:
 				display_surface.blit(game_over_text, game_over_text_rect)
@@ -234,6 +237,8 @@ def sub_game(width, height, gold, self=None):
 					if event.type == pygame.MOUSEBUTTONDOWN:
 						pos = pygame.mouse.get_pos()
 						if back_button.rect.collidepoint(pos):
+							game_over_sound.stop()
+							boost_sound.stop()
 							pygame.mixer.music.stop()
 							return return_gold
 		# Load the dog
