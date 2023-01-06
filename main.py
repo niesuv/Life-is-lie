@@ -1840,6 +1840,9 @@ def game_frame():
 					self.cele *= -1
 
 	pygame.init()
+	pygame.display.set_caption("Life is lie")
+	logo = pygame.image.load("./asset/image/logo.png")
+	pygame.display.set_icon(logo)
 
 	global userdata, pos, history
 	my_game = Game(userdata[pos][3], userdata[pos][4], history)
