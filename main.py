@@ -3,8 +3,8 @@ import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
 from cheems import  sub_game as game2
-from keras.models import load_model
-import gensim.models.keyedvectors as keyedvectors
+#from keras.models import load_model
+#import gensim.models.keyedvectors as keyedvectors
 
 userdata = []
 pow = []
@@ -130,7 +130,7 @@ def game_frame():
 
 
 	class Thumb_nail():
-		def __init__(self, x, y, image):
+		def __init__(self, x, y, image, circle = False):
 			width = image.get_width()
 			height = image.get_height()
 			self.image = pygame.transform.scale(image, (width, height))
@@ -141,12 +141,18 @@ def game_frame():
 			self.click = False
 			self.origin_rect = self.image.get_rect()
 			self.origin_rect.center = (x, y)
+			self.circle = circle
 		
 		def draw(self, surface):
 			surface.blit(self.image, self.rect)
 			pos = pygame.mouse.get_pos()
 			if self.origin_rect.collidepoint(pos) or self.click:
-				self.rect.center = self.pos_hover
+				if not self.circle:
+					self.rect.center = self.pos_hover
+				else:
+					pygame.draw.circle(surface, GREEN, (self.rect.centerx
+					                                    , self.rect.bottom + 20.0 / 1200 * my_game.WINDOW_WIDTH)
+					                   , 10.0 / 1200 * my_game.WINDOW_WIDTH)
 			else:
 				self.rect.center = self.pos_unhover
 
@@ -338,8 +344,8 @@ def game_frame():
 					image = pygame.image.load(f'./asset/set/set_avt/{k + 1}{i + 1}.png')
 					scale = image.get_height() / image.get_width()
 					image = pygame.transform.scale(image,
-												(int(0.1525 * self.WINDOW_WIDTH),
-													int(0.1525 * self.WINDOW_WIDTH * scale)))
+												(int(0.10 * self.WINDOW_WIDTH),
+													int(0.10 * self.WINDOW_WIDTH * scale)))
 					temp.append(image)
 				self.all_bet_thumbnail_images.append(temp)
 			self.has_load_bet = True
@@ -1024,7 +1030,7 @@ def game_frame():
 			self.bet_thumbnails = []
 			for i in range(5):
 				thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH))
-									, int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i])
+									, int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i], circle=True)
 				self.bet_thumbnails.append(thumbnail)
 			# Load Text
 			gold_text = self.font32.render(f'Gold:  {self.gold}', True, YELLOW)
