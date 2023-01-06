@@ -383,9 +383,8 @@ def game_frame():
 			#load
 			image = pygame.image.load(f"./asset/image/lucky_box.png")
 			scale = self.backmap.get_width() / self.backmap.get_height()
-			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT*0.12 * scale, self.WINDOW_HEIGHT*0.12))
-			self.use_item_button = Button((1-0.084)* self.WINDOW_WIDTH, (1-0.12)*self.WINDOW_HEIGHT,image , 1)
-			
+			image = pygame.transform.scale(image, (self.WINDOW_HEIGHT*0.08 * scale, self.WINDOW_HEIGHT*0.12))
+			self.use_item_button = Button((1-0.088)* self.WINDOW_WIDTH, (1-0.12)*self.WINDOW_HEIGHT,image , 1)
 			
 			# Add Character
 			self.player_group = pygame.sprite.Group()
@@ -726,7 +725,7 @@ def game_frame():
 				
 				#User gold text
 				gold_text = self.font64.render(f'{self.gold}', True, YELLOW) #rerender the gold text
-				price = max(self.gold // 10, 500)
+				price = max((self.gold // 1000) * 100, 500)
 				price_text = self.font64.render(f'-{price}', True, RED) #rerender price
 				if self.own_item == 3:
 					item_count = self.font64.render(f"X {self.own_item} (MAX)", True, GREEN) #rerender the items
@@ -1257,7 +1256,7 @@ def game_frame():
 			gold_box_rect.topleft = (int(self.WINDOW_WIDTH * 0.03), int(self.WINDOW_HEIGHT * 0.75))
 			
 			if self.bet == self.rank[0].index:
-				bet_box = self.font32.render(f'+ {self.bet_money}', True, GREEN)
+				bet_box = self.font32.render(f'+ {self.bet_money * (self.map_length - 1)}', True, GREEN)
 			else:
 				bet_box = self.font32.render(f'- {self.bet_money}', True, RED)
 				

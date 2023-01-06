@@ -71,7 +71,7 @@ def sub_game(width, height, gold, self=None):
 	# Load Music
 	bark_sound = pygame.mixer.Sound("./asset3/bark_sound.wav")
 	miss_sound = pygame.mixer.Sound("./asset3/miss.mp3")
-	boost_sound = pygame.mixer.Sound("./asset3/boost_sound.mp3")
+	boost_sound = pygame.mixer.Sound("./asset3/boost_sound.wav")
 	game_over_sound = pygame.mixer.Sound("./asset3/gameover.wav")
 	pygame.mixer.music.load("./asset3/music.mp3")
 	pygame.mixer.music.set_volume(.4)
