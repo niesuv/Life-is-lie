@@ -54,9 +54,9 @@ def sub_game(width, height, gold, self=None):
 	
 	# Game Value
 	if WINDOW_WIDTH == 1200:
-		BURGER_BEGIN_SPEED = 4
+		BURGER_BEGIN_SPEED = 7
 	else:
-		BURGER_BEGIN_SPEED = 6
+		BURGER_BEGIN_SPEED = 8
 	
 	ACCELERATION = .1
 	DOG_DEFAULT_SPEED = 8
@@ -161,7 +161,7 @@ def sub_game(width, height, gold, self=None):
 		
 		# Check Meat
 		if meat_rect.colliderect(dog_rect):
-			point += 100
+			point += 10
 			burger_speed += ACCELERATION
 			boost_level += 50
 			meat_rect.bottomleft = (random.randint(0, WINDOW_WIDTH - 72), 100)

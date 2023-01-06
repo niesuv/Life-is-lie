@@ -67,7 +67,7 @@ def sub_game(width, height, display, gold):
 			collied_monster = pygame.sprite.spritecollideany(player, monster_group)
 			if collied_monster:
 				if collied_monster.type == self.target_type:
-					self.score += self.round * 100
+					self.score += self.round * 10
 					collied_monster.remove(monster_group)
 					self.collect_sound.play()
 					# Check monster group contain monster
