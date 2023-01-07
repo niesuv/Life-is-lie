@@ -3,8 +3,8 @@ import pygame, random, sys, re, time, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
 from cheems import  sub_game as game2
-#from keras.models import load_model
-#import gensim.models.keyedvectors as keyedvectors
+from keras.models import load_model
+import gensim.models.keyedvectors as keyedvectors
 
 userdata = []
 pow = []
@@ -1874,7 +1874,8 @@ reset_password_bg = tk.PhotoImage(file="./asset/image/reset_password_bg.png")
 show = tk.PhotoImage(file="./asset/image/show.png")
 hide = tk.PhotoImage(file="./asset/image/hide.png")
 go_back = tk.PhotoImage(file="./asset/image/go_back.png")
-go_to = tk.PhotoImage(file="./asset/image/go_to.png")
+go_to_singup = tk.PhotoImage(file="./asset/image/go_to_signup.png")
+forgot_password = tk.PhotoImage(file="./asset/image/forgot_password.png")
 
 required_username = tk.PhotoImage(file="./asset/error/required_username.png")
 find_username = tk.PhotoImage(file="./asset/error/find_username.png")
@@ -2027,7 +2028,8 @@ class signup():
 			self.frame,
 			image=go_back,
 			bd=0,
-			activebackground="#a1cede",
+			bg="#aadcfe",
+			activebackground="#aadcfe",
 			cursor="hand2", 
 			command=lambda: [delete_errors(self.required_username_error, self.begin_username_error, self.invalid_username_error, self.username_existed_error, self.username_limit_error, 
 										self.required_email_error, self.invalid_email_error, self.email_existed_error,
@@ -2228,29 +2230,30 @@ class login():
 		self.reset_pass = reset_password()
 		self.forget_password_button = tk.Button(
 			self.frame, 
-			image=go_to,
+			image=forgot_password,
 			bd=0,
-			activebackground="#a1cede",
+			bg="#aadcfe",
+			activebackground="#aadcfe",
 			cursor="hand2",
 			command=lambda: [delete_errors(self.required_username_error, self.find_username_error,
 										self.required_password_error, self.match_password_error),
 							reset_state(self.password_state),
 							change_frame(self.frame, self.reset_pass.frame, self.username_entry, self.password_entry)])
-		self.forget_password_button.place(x=832, y=402)
-
+		self.forget_password_button.place(x=865, y=402)
 		# go to sign up
 		self.sign_up = signup()
 		self.go_to_signup_button = tk.Button(
 			self.frame, 
-			image=go_to,
+			image=go_to_singup,
 			bd=0,
-			activebackground="#a1cede",
+			bg="#aadcfe",
+			activebackground="#aadcfe",
 			cursor="hand2", 
 			command=lambda: [delete_errors(self.required_username_error, self.find_username_error,
 										self.required_password_error, self.match_password_error),
 							reset_state(self.password_state),
 							change_frame(self.frame, self.sign_up.frame, self.username_entry, self.password_entry)])
-		self.go_to_signup_button.place(x=795, y=434)
+		self.go_to_signup_button.place(x=828, y=434)
 
 		# errors messages
 		self.required_username_error = tk.Label(self.frame, image=required_username, bd=1, bg="#aadcfe")
@@ -2363,7 +2366,8 @@ class reset_password:
 			self.frame,
 			image=go_back,
 			bd=0,
-			activebackground="#a1cede",
+			bg="#aadcfe",
+			activebackground="#aadcfe",
 			cursor="hand2", 
 			command=lambda: [delete_errors(self.required_username_error, self.find_username_error,
 										self.required_email_error, self.find_email_error,
