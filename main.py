@@ -476,8 +476,8 @@ def game_frame():
 			image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH)
 			                                       , int(scale * 0.15 * self.WINDOW_WIDTH)))
 			
-			help_button = Button(int((1 - 0.03 - 0.075) * self.WINDOW_WIDTH)
-			                     , int(0.88 * self.WINDOW_HEIGHT), image, 1)
+			help_button = Button(int((1 - 0.07) * self.WINDOW_WIDTH)
+			                     , int(0.92 * self.WINDOW_HEIGHT), image, 1)
 			
 			#User button
 			image = pygame.image.load("./asset/button/button_user.png")
@@ -689,14 +689,14 @@ def game_frame():
 						#Check click game 1
 						if left_button.rect.collidepoint(pos):
 							self.menu_music.stop()
-							self.gold = game1(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.display_surface, self.gold)
+							self.gold = game1(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.display_surface, self.gold, self.music)
 							save_data_playing(self.gold, self.own_item, self.history)
 							if self.music:
 								self.menu_music.play(-1)
 						#CHeck click game 2
 						if right_button.rect.collidepoint(pos):
 							self.menu_music.stop()
-							self.gold = game2(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.gold)
+							self.gold = game2(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.gold, self.music)
 							save_data_playing(self.gold, self.own_item, self.history)
 							if self.music:
 								self.menu_music.play(-1)

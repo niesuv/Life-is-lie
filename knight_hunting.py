@@ -1,6 +1,6 @@
 import pygame, random, sys
 
-def sub_game(width, height, display, gold):
+def sub_game(width, height, display, gold, music):
 	pygame.init()
 	# Defind SOME color
 	PINK = (158, 50, 168)
@@ -8,7 +8,6 @@ def sub_game(width, height, display, gold):
 	ORANGE = (217, 101, 7)
 	BLUE = (10, 43, 173)
 	BLACK = (0, 0, 0)
-	WHITE = (255, 255, 255)
 	YELLOW = (209, 206, 23)
 	
 	
@@ -69,7 +68,8 @@ def sub_game(width, height, display, gold):
 				if collied_monster.type == self.target_type:
 					self.score += self.round * 10
 					collied_monster.remove(monster_group)
-					self.collect_sound.play()
+					if music:
+						self.collect_sound.play()
 					# Check monster group contain monster
 					if monster_group:
 						self.choose_new_target()
@@ -80,10 +80,12 @@ def sub_game(width, height, display, gold):
 				else:
 					self.player.lives -= 1
 					self.player.warps()
-					self.miss_sound.play()
+					if music:
+						self.miss_sound.play()
 					# Check lose
 					if self.player.lives <= 0:
-						self.game_over_sound.play()
+						if music:
+							self.game_over_sound.play()
 						self.pause_game("You LOSE, Press ENTER to PlayAgain")
 						self.reset_game()
 		
@@ -192,8 +194,8 @@ def sub_game(width, height, display, gold):
 				self.display_surface.blit(bet_text, bet_text_rect)
 				back_button.draw(self.display_surface)
 				clock.tick(60)
-				
-			self.backgr_music.play(-1)
+			if music:	
+				self.backgr_music.play(-1)
 		
 		def pause_start_game(self, text):
 			font = pygame.font.Font("./asset2/font.ttf", 46)
@@ -222,8 +224,8 @@ def sub_game(width, height, display, gold):
 				# gold text , score text , pause text
 				self.display_surface.blit(pause_text, pause_text_rect)
 				clock.tick(60)
-			
-			self.backgr_music.play(-1)
+			if music:
+				self.backgr_music.play(-1)
 			
 		def reset_game(self):
 			self.player.reset()
@@ -257,7 +259,8 @@ def sub_game(width, height, display, gold):
 		
 		def warps(self):
 			self.warp -= 1
-			self.warp_sound.play()
+			if music:
+				self.warp_sound.play()
 			self.rect.centerx = WINDOW_WIDTH // 2
 			self.rect.bottom = WINDOW_HEIGHT
 		
@@ -308,7 +311,8 @@ def sub_game(width, height, display, gold):
 	
 	sub_game = Game(player, monster_group)
 	sub_game.pause_start_game("Tap enter to play!")
-	sub_game.backgr_music.play(-1)
+	if music:
+		sub_game.backgr_music.play(-1)
 	sub_game.start_new_round()
 	
 	# MAIN GAME LOOP

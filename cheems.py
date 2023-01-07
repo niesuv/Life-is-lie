@@ -3,14 +3,10 @@ import sys
 import pygame, random
 
 
-def sub_game(width, height, gold, self=None):
+def sub_game(width, height, gold, music):
 	
-	PINK = (158, 50, 168)
 	GREEN = (30, 189, 38)
 	ORANGE = (217, 101, 7)
-	BLUE = (10, 43, 173)
-	BLACK = (0, 0, 0)
-	WHITE = (255, 255, 255)
 	YELLOW = (209, 206, 23)
 	
 	class Button():
@@ -109,7 +105,8 @@ def sub_game(width, height, gold, self=None):
 	boost_text_rect.y = 32
 	
 	# BEGIN GAME
-	pygame.mixer.music.play(-1)
+	if music:
+		pygame.mixer.music.play(-1)
 	boost_level = DOG_BEGIN_BOOST_LEVEL
 	point = 0
 	lives = DOG_LIVES
@@ -149,7 +146,8 @@ def sub_game(width, height, gold, self=None):
 		if keys[pygame.K_SPACE] and boost_level > 0:
 			boost_level -= 1
 			if dog_speed != DOG_BOOST_SPEED:
-				boost_sound.play()
+				if music:
+					boost_sound.play()
 			dog_speed = DOG_BOOST_SPEED
 		
 		else:
@@ -165,9 +163,11 @@ def sub_game(width, height, gold, self=None):
 			burger_speed += ACCELERATION
 			boost_level += 50
 			meat_rect.bottomleft = (random.randint(0, WINDOW_WIDTH - 72), 100)
-			bark_sound.play()
+			if music:
+				bark_sound.play()
 		if meat_rect.y > WINDOW_HEIGHT:
-			miss_sound.play()
+			if music:
+				miss_sound.play()
 			lives -= 1
 			meat_rect.bottomleft = (random.randint(0, WINDOW_WIDTH - 72), 100)
 		
@@ -208,7 +208,8 @@ def sub_game(width, height, gold, self=None):
 			back_button = Button(int((1 - 0.03 - 0.075) * WINDOW_WIDTH)
 			                     , int(0.88 * WINDOW_HEIGHT), image, 1)
 
-			game_over_sound.play()
+			if music:
+				game_over_sound.play()
 			while pause:
 				display_surface.blit(game_over_text, game_over_text_rect)
 				display_surface.blit(gold_text, gold_text_rect)
@@ -224,7 +225,8 @@ def sub_game(width, height, gold, self=None):
 						if event.key == pygame.K_RETURN:
 							pause = False
 							game_over_sound.stop()
-							pygame.mixer.music.play(-1)
+							if music:
+								pygame.mixer.music.play(-1)
 							boost_level = DOG_BEGIN_BOOST_LEVEL
 							point = 0
 							lives = DOG_LIVES
