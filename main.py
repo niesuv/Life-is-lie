@@ -1,5 +1,5 @@
 import threading
-import pygame, random, sys, re, time, numpy as np
+import pygame, random, sys, re, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
 from cheems import  sub_game as game2
