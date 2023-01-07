@@ -1272,7 +1272,7 @@ def game_frame():
 			#data variable-Save vo data nhe (self.gold, self.history)
 			if len(self.history) >= 7:
 				self.history.pop()
-			self.history.insert(0,  [self.bet, self.map_length, sign * self.bet_money])
+			self.history.insert(0,  [self.bet, self.map_length, sign * self.bet_money * (self.map_length - 1)])
 			
 			save_data_playing(self.gold, self.own_item, self.history)
 
