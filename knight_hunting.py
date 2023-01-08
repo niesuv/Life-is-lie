@@ -2,6 +2,7 @@ import pygame, random, sys
 
 def sub_game(width, height, display, gold, music):
 	pygame.init()
+	
 	# Defind SOME color
 	PINK = (158, 50, 168)
 	GREEN = (30, 189, 38)
@@ -10,15 +11,16 @@ def sub_game(width, height, display, gold, music):
 	BLACK = (0, 0, 0)
 	YELLOW = (209, 206, 23)
 	
-	
 	# Create surface
 	global WINDOW_WIDTH, WINDOW_HEIGHT
 	WINDOW_WIDTH = width
 	WINDOW_HEIGHT = height
+	
 	# FPS
 	FPS = 60
 	clock = pygame.time.Clock()
 	
+
 	class Button():
 		def __init__(self, x, y, image, scale):
 			width = image.get_width()
@@ -52,6 +54,7 @@ def sub_game(width, height, display, gold, music):
 			self.target_monster = random.choice(monster_group.sprites())
 			self.target_type = self.target_monster.type
 			self.display_surface = display
+			
 			# font
 			self.font = pygame.font.Font("./asset2/font.ttf", 32)
 			self.colors = [BLUE, GREEN, PINK, ORANGE]
@@ -70,18 +73,21 @@ def sub_game(width, height, display, gold, music):
 					collied_monster.remove(monster_group)
 					if music:
 						self.collect_sound.play()
+					
 					# Check monster group contain monster
 					if monster_group:
 						self.choose_new_target()
 					else:
 						self.round += 1
 						self.start_new_round()
+				
 				# MEET sai con
 				else:
 					self.player.lives -= 1
 					self.player.warps()
 					if music:
 						self.miss_sound.play()
+					
 					# Check lose
 					if self.player.lives <= 0:
 						if music:
@@ -94,9 +100,8 @@ def sub_game(width, height, display, gold, music):
 			for monster in self.monster_group.sprites():
 				monster_group.remove(monster)
 			for i in range(1, number_monster + 1):
-				monster_group.add(
-					Monster(random.randint(0, WINDOW_WIDTH - 64), random.randint(100, WINDOW_HEIGHT - 100 - 64),
-					        random.randint(0, 3)))
+				monster_group.add(Monster(random.randint(0, WINDOW_WIDTH - 64), random.randint(100, WINDOW_HEIGHT - 100 - 64),
+					        	  random.randint(0, 3)))
 			self.choose_new_target()
 			self.player.come_back()
 			self.player.warp += 1
@@ -112,7 +117,6 @@ def sub_game(width, height, display, gold, music):
 				self.frame_count = 0
 		
 		def draw(self):
-			
 			score_text = self.font.render(f'Scores:  {self.score}', True, YELLOW)
 			score_text_rect = score_text.get_rect()
 			score_text_rect.topleft = (10, 10)
@@ -138,28 +142,24 @@ def sub_game(width, height, display, gold, music):
 		def pause_game(self, text):
 			font = pygame.font.Font("./asset2/font.ttf", 46)
 			
-			#point text
+			# point text
 			bet_text = font.render(f'+ {self.score // 5}', True, GREEN)
 			self.gold += self.score // 5
 
-			#Gold text
+			# Gold text
 			gold_text = font.render(f'GOLD: {self.gold}', True, YELLOW)
 			gold_text_rect = gold_text.get_rect()
 			gold_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), int(WINDOW_HEIGHT * 0.75))
 
 			bet_text_rect = bet_text.get_rect()
-			bet_text_rect.topleft = ( int(WINDOW_WIDTH * 0.03)
-			                         , int(WINDOW_HEIGHT * 0.75) + gold_text_rect.height)
+			bet_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), 
+									 int(WINDOW_HEIGHT * 0.75) + gold_text_rect.height)
 			
-			#Back btn
+			# Back btn
 			image = pygame.image.load("./asset/button/button_back.png")
 			scale = image.get_height() / image.get_width()
-			
-			image = pygame.transform.scale(image, (int(0.15 * WINDOW_WIDTH)
-			                                       , int(scale * 0.15 * WINDOW_WIDTH)))
-			
-			back_button = Button(int((1 - 0.03 - 0.075) * WINDOW_WIDTH)
-			                     , int(0.88 * WINDOW_HEIGHT), image, 1)
+			image = pygame.transform.scale(image, (int(0.15 * WINDOW_WIDTH), int(scale * 0.15 * WINDOW_WIDTH)))
+			back_button = Button(int((1 - 0.03 - 0.075) * WINDOW_WIDTH), int(0.88 * WINDOW_HEIGHT), image, 1)
 			
 			pause = True
 			
@@ -169,7 +169,6 @@ def sub_game(width, height, display, gold, music):
 			pause_text_rect = pause_text.get_rect()
 			pause_text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
 			while pause:
-
 				pygame.display.update()
 				for event in pygame.event.get():
 					if event.type == pygame.QUIT:
@@ -186,20 +185,21 @@ def sub_game(width, height, display, gold, music):
 							running = False
 							return
 					
-				#refresh
+				# refresh
 				self.display_surface.fill(BLACK)
-				#gold text , score text , pause text
+				
+				# gold text , score text , pause text
 				self.display_surface.blit(pause_text, pause_text_rect)
 				self.display_surface.blit(gold_text, gold_text_rect)
 				self.display_surface.blit(bet_text, bet_text_rect)
 				back_button.draw(self.display_surface)
 				clock.tick(60)
+			
 			if music:	
 				self.backgr_music.play(-1)
 		
 		def pause_start_game(self, text):
 			font = pygame.font.Font("./asset2/font.ttf", 46)
-			
 			
 			pause = True
 			
@@ -208,8 +208,7 @@ def sub_game(width, height, display, gold, music):
 			pause_text = font.render(text, True, YELLOW)
 			pause_text_rect = pause_text.get_rect()
 			pause_text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
-			while pause:
-				
+			while pause:				
 				pygame.display.update()
 				for event in pygame.event.get():
 					if event.type == pygame.QUIT:
@@ -221,9 +220,11 @@ def sub_game(width, height, display, gold, music):
 				
 				# refresh
 				self.display_surface.fill(BLACK)
+				
 				# gold text , score text , pause text
 				self.display_surface.blit(pause_text, pause_text_rect)
 				clock.tick(60)
+			
 			if music:
 				self.backgr_music.play(-1)
 			
@@ -305,9 +306,7 @@ def sub_game(width, height, display, gold, music):
 	player_group.add(player)
 	
 	monster_group = pygame.sprite.Group()
-	monster_group.add(
-		Monster(random.randint(0, WINDOW_WIDTH - 64), random.randint(100, WINDOW_HEIGHT - 100 - 64), random.randint(0, 3)))
-	
+	monster_group.add(Monster(random.randint(0, WINDOW_WIDTH - 64), random.randint(100, WINDOW_HEIGHT - 100 - 64), random.randint(0, 3)))
 	
 	sub_game = Game(player, monster_group)
 	sub_game.pause_start_game("Tap enter to play!")
@@ -347,6 +346,5 @@ def sub_game(width, height, display, gold, music):
 		clock.tick(FPS)
 	
 	return sub_game.gold
-
 
 #sub_game(1200,675,pygame.display.set_mode((1200,675)),100)

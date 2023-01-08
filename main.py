@@ -2,7 +2,7 @@ import threading
 import pygame, random, sys, re, numpy as np
 import tkinter as tk
 from knight_hunting import sub_game as game1
-from cheems import  sub_game as game2
+from cheems import sub_game as game2
 from keras.models import load_model
 import gensim.models.keyedvectors as keyedvectors
 
@@ -82,7 +82,7 @@ history = []
 def get_data_playing():
     global userdata, history
 
-    if (len(userdata[pos]) < 4):
+    if len(userdata[pos]) < 4:
         userdata[pos].append(0)
         userdata[pos].append(0)
         return
@@ -149,8 +149,9 @@ def game_frame():
                 if not self.circle:
                     self.rect.center = self.pos_hover
                 else:
-                    pygame.draw.circle(surface, GREEN, (self.rect.centerx, 
-                                                        self.rect.bottom + 20.0 / 1200 * my_game.WINDOW_WIDTH), 
+                    pygame.draw.circle(surface,
+                                       GREEN,
+                                       (self.rect.centerx, self.rect.bottom + 20.0 / 1200 * my_game.WINDOW_WIDTH),
                                        10.0 / 1200 * my_game.WINDOW_WIDTH)
             else:
                 self.rect.center = self.pos_unhover
@@ -273,10 +274,10 @@ def game_frame():
             self.history = history
             self.own_item = int(items)
             
-            #font text
+            # font text
             self.show_text_chat = u""
             
-            #setting variable
+            # setting variable
             self.music = True
         
         def main(self):
@@ -318,7 +319,8 @@ def game_frame():
             images = []
             for i in range(6):
                 image = pygame.image.load(f"./asset/set/set_avt/all_set_{i + 1}.png")
-                image = pygame.transform.scale(image, (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
+                image = pygame.transform.scale(image,
+                                               (int(0.286 * self.WINDOW_HEIGHT), int(0.286 * self.WINDOW_HEIGHT)))
                 images.append(image)
             
             self.sets_thumbnail = []
@@ -337,7 +339,9 @@ def game_frame():
             # Load Item image
             image = pygame.image.load("./asset/image/lucky_box.png")
             scale = image.get_width() / image.get_height()
-            self.item_image = pygame.transform.scale(image, (int(scale * self.WINDOW_HEIGHT * 0.11), int(self.WINDOW_HEIGHT * 0.11)))
+            self.item_image = pygame.transform.scale(image,
+                                                     (int(scale * self.WINDOW_HEIGHT * 0.11),
+                                                      int(self.WINDOW_HEIGHT * 0.11)))
             self.has_load_set = True
         
         def load_bet(self):
@@ -350,7 +354,8 @@ def game_frame():
                     image = pygame.image.load(f'./asset/set/set_avt/{k + 1}{i + 1}.png')
                     scale = image.get_height() / image.get_width()
                     image = pygame.transform.scale(image,
-                                                            (int(0.10 * self.WINDOW_WIDTH), int(0.10 * self.WINDOW_WIDTH * scale)))
+                                                   (int(0.10 * self.WINDOW_WIDTH),
+                                                    int(0.10 * self.WINDOW_WIDTH * scale)))
                     temp.append(image)
                 self.all_bet_thumbnail_images.append(temp)
             self.has_load_bet = True
@@ -360,7 +365,7 @@ def game_frame():
             for i in range(8):
                 image = pygame.image.load(f"./asset/effectskill/speedup/{i+1}.png")
                 scale = image.get_width() / image.get_height()
-                image = pygame.transform.scale(image , (self.WINDOW_HEIGHT * 0.3 * scale, self.WINDOW_HEIGHT * 0.11))
+                image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.3 * scale, self.WINDOW_HEIGHT * 0.11))
                 self.speed_up_frame.append(image)
             
             self.slow_down_frame = []
@@ -384,7 +389,7 @@ def game_frame():
                 image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.2 * scale, self.WINDOW_HEIGHT * 0.11))
                 self.tele_frame.append(image)
                 
-            #finish
+            # finish
             self.has_load_skill = True
         
         def load_race(self):
@@ -396,16 +401,19 @@ def game_frame():
             self.backmap_rect = self.backmap.get_rect()
             self.backmap_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 2)
             
-            #load
+            # load
             image = pygame.image.load(f"./asset/image/lucky_box.png")
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image, (self.WINDOW_HEIGHT*0.12 * scale, self.WINDOW_HEIGHT*0.12))
-            self.use_item_button = Button((1-0.084)* self.WINDOW_WIDTH, (1-0.12)*self.WINDOW_HEIGHT, image, 1)
+            self.use_item_button = Button((1-0.084) * self.WINDOW_WIDTH, (1-0.12) * self.WINDOW_HEIGHT, image, 1)
 
             # Add Character
             self.player_group = pygame.sprite.Group()
             for i in range(1, 6):
-                player = Player(i, 0, self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174, self.player_group)
+                player = Player(i,
+                                0,
+                                self.WINDOW_HEIGHT * 0.263 + (i - 1) * self.WINDOW_HEIGHT * 0.174,
+                                self.player_group)
                 self.player_group.add(player)
                 if i == self.bet:
                     self.user_player = player
@@ -416,14 +424,18 @@ def game_frame():
             # text shop button
             image = pygame.image.load("./asset/image/shop.png")
             scale = image.get_width() / image.get_height()
-            self.shop_text = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.13 * scale, self.WINDOW_HEIGHT * 0.13))
+            self.shop_text = pygame.transform.scale(image,
+                                                    (self.WINDOW_HEIGHT * 0.13 * scale, self.WINDOW_HEIGHT * 0.13))
             
             # buy now button
             image = pygame.image.load("./asset/button/button_buy_now.png")
             scale = image.get_width() / image.get_height()
-            self.buy_button_actived = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale, self.WINDOW_HEIGHT // 8))
+            self.buy_button_actived = pygame.transform.scale(image,
+                                                             (self.WINDOW_HEIGHT // 8 * scale, self.WINDOW_HEIGHT // 8))
             image = pygame.image.load("./asset/button/button_buy_now_unactive.png")
-            self.buy_button_unactived = pygame.transform.scale(image, (self.WINDOW_HEIGHT // 8 * scale, self.WINDOW_HEIGHT // 8))
+            self.buy_button_unactived = pygame.transform.scale(image,
+                                                               (self.WINDOW_HEIGHT // 8 * scale,
+                                                                self.WINDOW_HEIGHT // 8))
             
             # coin
             image = pygame.image.load("./asset/image/coin.png")
@@ -452,15 +464,16 @@ def game_frame():
             # Load background
             image = pygame.image.load("./asset/image/back.webp").convert()
             scale = int(image.get_width() / image.get_height())
-            self.back_ground_image = pygame.transform.scale(image, (int(self.WINDOW_HEIGHT * scale), self.WINDOW_HEIGHT))
+            self.back_ground_image = pygame.transform.scale(image,
+                                                            (int(self.WINDOW_HEIGHT * scale), self.WINDOW_HEIGHT))
             
             # Button menu
             
             # new game button
             image = pygame.image.load("./asset/button/button_new-game.png")
             scale = image.get_width() / image.get_height()
-            image = pygame.transform.scale(image, (self.WINDOW_HEIGHT* 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
-            start_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT* 0.28, image, 1)
+            image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.11 * scale, self.WINDOW_HEIGHT * 0.11))
+            start_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.28, image, 1)
             
             # settings button
             image = pygame.image.load("./asset/button/button_settings.png")
@@ -477,13 +490,15 @@ def game_frame():
             # help button
             image = pygame.image.load("./asset/button/button_help.png")
             scale = image.get_height() / image.get_width()
-            image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH), int(scale * 0.15 * self.WINDOW_WIDTH)))
+            image = pygame.transform.scale(image,
+                                           (int(0.15 * self.WINDOW_WIDTH), int(scale * 0.15 * self.WINDOW_WIDTH)))
             help_button = Button(int((1 - 0.07) * self.WINDOW_WIDTH), int(0.92 * self.WINDOW_HEIGHT), image, 1)
             
             # User button
             image = pygame.image.load("./asset/button/button_user.png")
             scale = image.get_height() / image.get_width()
-            image = pygame.transform.scale(image, (int(0.15 * self.WINDOW_WIDTH), int(scale * 0.15 * self.WINDOW_WIDTH)))
+            image = pygame.transform.scale(image,
+                                           (int(0.15 * self.WINDOW_WIDTH), int(scale * 0.15 * self.WINDOW_WIDTH)))
             user_button = Button(int((0.03 + 0.075) * self.WINDOW_WIDTH), int(0.88 * self.WINDOW_HEIGHT), image, 1)
             
             # Mini game button
@@ -572,8 +587,10 @@ def game_frame():
                             helping = False
                         
                 self.show_back_ground()
-                #show the help
-                self.display_surface.blit(help_image, (0,0))
+
+                # show the help
+                self.display_surface.blit(help_image, (0, 0))
+
                 # DRAW BUTTON
                 go_back_button.draw(self.display_surface)
                 pygame.display.update()
@@ -585,10 +602,10 @@ def game_frame():
             image = pygame.image.load("./asset/button/go_back_button.png")
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image,
-                                                    (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+                                           (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
             go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
-                                            int(0.075 * self.WINDOW_HEIGHT),
-                                            image, 1)
+                                    int(0.075 * self.WINDOW_HEIGHT),
+                                    image, 1)
             
             user_image = pygame.image.load("./asset/image/user_page.png")
             user_image = pygame.transform.scale(user_image, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
@@ -597,23 +614,42 @@ def game_frame():
             type_map = ["SHORT MAP", "MEDIUM MAP", "LONG MAP"]
             history_text = []
             dis = self.WINDOW_WIDTH // 32 + 1
-            for i , item in enumerate(self.history):
+            for i, item in enumerate(self.history):
                 temp = []
-                temp.append(Text(f"{abs( int( int(item[2]) / (int(item[1]) - 1) ) )}", self.font32 ,int(.13 * self.WINDOW_WIDTH),
-                                 int( (0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis ), center=True,hover=False))
+                temp.append(Text(f"{abs( int( int(item[2]) / (int(item[1]) - 1) ) )}",
+                                 self.font32,
+                                 int(.13 * self.WINDOW_WIDTH),
+                                 int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis),
+                                 center=True,
+                                 hover=False))
                 
-                temp.append(Text(f"{type_map[int(item[1])-2]}", self.font32, int(.4 * self.WINDOW_WIDTH), 
-                                 int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,hover=False))
+                temp.append(Text(f"{type_map[int(item[1])-2]}",
+                                 self.font32,
+                                 int(.4 * self.WINDOW_WIDTH),
+                                 int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis),
+                                 center=True,
+                                 hover=False))
                 
-                temp.append(Text(f" {item[0]}", self.font32, int(.64 * self.WINDOW_WIDTH), 
-                                 int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,hover=False))
+                temp.append(Text(f" {item[0]}",
+                                 self.font32,
+                                 int(.64 * self.WINDOW_WIDTH),
+                                 int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis),
+                                 center=True,
+                                 hover=False))
                 if (int(item[2]) > 0):
-                    temp.append(Text(f"+{item[2]}", self.font32, int(.86 * self.WINDOW_WIDTH), 
-                                     int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True, color=GREEN, 
+                    temp.append(Text(f"+{item[2]}",
+                                     self.font32,
+                                     int(.86 * self.WINDOW_WIDTH),
+                                     int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis),
+                                     center=True,
+                                     color=GREEN,
                                      hover=False))
                 else:
-                    temp.append(Text(f"{ int (int(item[2]) / ( int(item[1]) - 1)) }", self.font32, int(.86 * self.WINDOW_WIDTH),
-                                     int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,
+                    temp.append(Text(f"{ int (int(item[2]) / ( int(item[1]) - 1)) }",
+                                     self.font32,
+                                     int(.86 * self.WINDOW_WIDTH),
+                                     int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis),
+                                     center=True,
                                      color=RED, 
                                      hover=False))
                 history_text.append(temp)
@@ -633,7 +669,7 @@ def game_frame():
                 self.show_back_ground()
                 
                 # Draw the history skeletons
-                self.display_surface.blit(user_image, (0 ,0))
+                self.display_surface.blit(user_image, (0, 0))
                 for grp in history_text:
                     for item in grp:
                         item.draw(self.display_surface)
@@ -649,30 +685,34 @@ def game_frame():
             image = pygame.image.load("./asset/button/go_back_button.png")
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image,
-                                                   (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
+                                           (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
             go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
-                                            int(0.075 * self.WINDOW_HEIGHT),
-                                            image, 1)
+                                    int(0.075 * self.WINDOW_HEIGHT),
+                                    image, 1)
             
             # button start game
             image = pygame.image.load("./asset/button/button_start.png")
             scale = image.get_width() / image.get_height()
-            image = pygame.transform.scale(image , (self.WINDOW_HEIGHT * .12 * scale, self.WINDOW_HEIGHT * .12))
+            image = pygame.transform.scale(image, (self.WINDOW_HEIGHT * .12 * scale, self.WINDOW_HEIGHT * .12))
             left_button = Button(int(0.26 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84), image, 1)
-            right_button = Button(int(0.73 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84) , image, 1)
+            right_button = Button(int(0.73 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84), image, 1)
             
             # image mini game
             image = pygame.image.load("./asset/image/minigame1.png")
             scale = image.get_width() / image.get_height()
-            knight_image = pygame.transform.scale(image, (int(self.WINDOW_HEIGHT * 0.45 * scale), int(self.WINDOW_HEIGHT * 0.45) ) )
+            knight_image = pygame.transform.scale(image,
+                                                  (int(self.WINDOW_HEIGHT * 0.45 * scale),
+                                                   int(self.WINDOW_HEIGHT * 0.45)))
             knight_image_rect = knight_image.get_rect()
-            knight_image_rect.center = (0.26 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT *0.4)
+            knight_image_rect.center = (0.26 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT * 0.4)
             
             image = pygame.image.load("./asset/image/minigame2.png")
             scale = image.get_width() / image.get_height()
-            cheems_image = pygame.transform.scale(image,(int(self.WINDOW_HEIGHT * 0.45 * scale), int(self.WINDOW_HEIGHT * 0.45) ) )
+            cheems_image = pygame.transform.scale(image,
+                                                  (int(self.WINDOW_HEIGHT * 0.45 * scale),
+                                                   int(self.WINDOW_HEIGHT * 0.45)))
             cheems_image_rect = cheems_image.get_rect()
-            cheems_image_rect.center = (0.73 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT *0.4)
+            cheems_image_rect.center = (0.73 * self.WINDOW_WIDTH, self.WINDOW_HEIGHT * 0.4)
             
             playing = True
             while playing:
@@ -690,7 +730,11 @@ def game_frame():
                         # Check click game 1
                         if left_button.rect.collidepoint(pos):
                             self.menu_music.stop()
-                            self.gold = game1(self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.display_surface, self.gold, self.music)
+                            self.gold = game1(self.WINDOW_WIDTH,
+                                              self.WINDOW_HEIGHT,
+                                              self.display_surface,
+                                              self.gold,
+                                              self.music)
                             save_data_playing(self.gold, self.own_item, self.history)
                             if self.music:
                                 self.menu_music.play(-1)
@@ -738,9 +782,9 @@ def game_frame():
             # lucky box
             image = pygame.image.load("./asset/image/gift_box.png")
             scale = image.get_width() / image.get_height()
-            gift_box = pygame.transform.scale(image, (self.WINDOW_HEIGHT *0.45 * scale, self.WINDOW_HEIGHT*0.45))
+            gift_box = pygame.transform.scale(image, (self.WINDOW_HEIGHT * 0.45 * scale, self.WINDOW_HEIGHT * 0.45))
             gift_box_rect = gift_box.get_rect()
-            gift_box_rect.center = (self.WINDOW_WIDTH //2, self.WINDOW_HEIGHT *0.3)
+            gift_box_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.3)
             
             # coin
             coin_rect = self.coin.get_rect()
@@ -764,7 +808,7 @@ def game_frame():
             shop_text_rect.center = (self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 10)
             
             # owner items text
-            item_count = self.font64.render(f"X {self.own_item}", True ,GREEN)
+            item_count = self.font64.render(f"X {self.own_item}", True, GREEN)
             item_count_rect = item_count.get_rect()
             item_count_rect.centery = gift_box_rect.centery + self.WINDOW_HEIGHT * (15.0 / 675)
             item_count_rect.left = gift_box_rect.right
@@ -805,14 +849,13 @@ def game_frame():
                 
                 # shop text
                 self.display_surface.blit(self.shop_text, shop_text_rect)
-                
-                
+
                 # User gold text
-                gold_text = self.font64.render(f'{self.gold}', True, YELLOW) # rerender the gold text
+                gold_text = self.font64.render(f'{self.gold}', True, YELLOW)  # rerender the gold text
                 price = max((self.gold // 1000) * 100, 500)
-                price_text = self.font64.render(f'-{price}', True, RED) # rerender price
+                price_text = self.font64.render(f'-{price}', True, RED)  # rerender price
                 if self.own_item == 3:
-                    item_count = self.font64.render(f"X {self.own_item} (MAX)", True, GREEN) # rerender the items
+                    item_count = self.font64.render(f"X {self.own_item} (MAX)", True, GREEN)  # rerender the items
                 else:
                     item_count = self.font64.render(f"X {self.own_item}", True, GREEN)  # rerender the items
                 self.display_surface.blit(gold_text, gold_text_rect)
@@ -847,7 +890,8 @@ def game_frame():
                                            (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
             
             # GO BACK BUTTON
-            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
+            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+                                    int(0.075 * self.WINDOW_HEIGHT),
                                     image, 1)
             
             # setting option button
@@ -865,9 +909,9 @@ def game_frame():
             music_unactived = pygame.transform.scale(image2,
                                                      (self.WINDOW_HEIGHT // 10 * scale, self.WINDOW_HEIGHT // 10))
             if self.music:
-                music_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.357 , music_actived , 1)
+                music_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.357, music_actived, 1)
             else:
-                music_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.357 , music_unactived , 1)
+                music_button = Button(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT * 0.357, music_unactived, 1)
 
             setting = True
             while setting:
@@ -919,7 +963,8 @@ def game_frame():
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image,
                                            (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
-            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
+            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+                                    int(0.075 * self.WINDOW_HEIGHT),
                                     image, 1)
             resulutioning = True
             while resulutioning:
@@ -1044,7 +1089,9 @@ def game_frame():
             self.bet_thumbnails = []
             for i in range(5):
                 thumbnail = Thumb_nail(int(((0.15 + i * (0.1525 + 0.063 / 2)) * self.WINDOW_WIDTH)), 
-                                       int(0.195 * self.WINDOW_HEIGHT), self.bet_thumbnail_images[i], circle=True)
+                                       int(0.195 * self.WINDOW_HEIGHT),
+                                       self.bet_thumbnail_images[i],
+                                       circle=True)
                 self.bet_thumbnails.append(thumbnail)
             
             # Load Text
@@ -1058,7 +1105,9 @@ def game_frame():
             bet_text_rect = bet_text.get_rect()
             bet_text_rect.topleft = (int(0.15 * self.WINDOW_WIDTH), int(0.7 * self.WINDOW_HEIGHT))
             
-            text_box = pygame.Rect(int(0.15 * self.WINDOW_WIDTH), int(0.7 * self.WINDOW_HEIGHT), self.WINDOW_WIDTH // 3,
+            text_box = pygame.Rect(int(0.15 * self.WINDOW_WIDTH),
+                                   int(0.7 * self.WINDOW_HEIGHT),
+                                   self.WINDOW_WIDTH // 3,
                                    self.WINDOW_HEIGHT // 10)
             color = YELLOW
             active = False
@@ -1077,12 +1126,13 @@ def game_frame():
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image,
                                            (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
-            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
+            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+                                    int(0.075 * self.WINDOW_HEIGHT),
                                     image, 1)
             dis = 15.0 / 1200 * self.WINDOW_WIDTH
             dis_ = 15.0 / 675 * self.WINDOW_HEIGHT
-            short_map = Text("SHORT MAP", self.font32,text_box.right + dis , gold_text_rect.top - dis_)
-            medium_map = Text("MEDIUM MAP", self.font32, text_box.right + dis , short_map.text_rect.bottom + dis_)
+            short_map = Text("SHORT MAP", self.font32, text_box.right + dis, gold_text_rect.top - dis_)
+            medium_map = Text("MEDIUM MAP", self.font32, text_box.right + dis, short_map.text_rect.bottom + dis_)
             medium_map.click = True
             long_map = Text("LONG MAP", self.font32, text_box.right + dis, medium_map.text_rect.bottom + dis_)
             map_choose = [short_map, medium_map, long_map]
@@ -1171,7 +1221,10 @@ def game_frame():
                                         self.race()
                 
                 # Check error
-                error = (len(user_text) >= 11) or (not user_text.isdigit()) or (int(user_text) <= 0) or (int(user_text) > self.gold)
+                error = (len(user_text) >= 11) \
+                        or (not user_text.isdigit()) \
+                        or (int(user_text) <= 0) \
+                        or (int(user_text) > self.gold)
                 self.show_back_ground()
                 
                 # Draw character
@@ -1209,7 +1262,8 @@ def game_frame():
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image,
                                            (int(0.0688 * self.WINDOW_HEIGHT * scale), int(0.0688 * self.WINDOW_HEIGHT)))
-            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
+            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+                                    int(0.075 * self.WINDOW_HEIGHT),
                                     image, 1)
             mapping = True
             while mapping:
@@ -1248,7 +1302,8 @@ def game_frame():
             
             # GO BACK BUTTON
             
-            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2), int(0.075 * self.WINDOW_HEIGHT),
+            go_back_button = Button(int(0.051 * self.WINDOW_WIDTH + image.get_width() / 2),
+                                    int(0.075 * self.WINDOW_HEIGHT),
                                     image, 1)
             chosing_set = True
             while chosing_set:
@@ -1299,7 +1354,7 @@ def game_frame():
             #data variable-Save vo data nhe (self.gold, self.history)
             if len(self.history) >= 7:
                 self.history.pop()
-            self.history.insert(0,  [self.bet, self.map_length, sign * self.bet_money * (self.map_length - 1)])
+            self.history.insert(0, [self.bet, self.map_length, sign * self.bet_money * (self.map_length - 1)])
             
             save_data_playing(self.gold, self.own_item, self.history)
 
@@ -1547,8 +1602,10 @@ def game_frame():
             text_box_rect = text_box.get_rect()
             text_box_rect.topleft = (int(self.WINDOW_WIDTH * 0.73), int(self.WINDOW_HEIGHT * 0.05))
             
-            text_chat_rect = pygame.Rect(int(self.WINDOW_WIDTH * 0.73), int(self.WINDOW_HEIGHT * 0.026),
-                                         self.WINDOW_WIDTH // 4, self.WINDOW_HEIGHT // 12)  # để nhận biết nhấp chuột
+            text_chat_rect = pygame.Rect(int(self.WINDOW_WIDTH * 0.73),
+                                         int(self.WINDOW_HEIGHT * 0.026),
+                                         self.WINDOW_WIDTH // 4,
+                                         self.WINDOW_HEIGHT // 12)  # để nhận biết nhấp chuột
             
             text_box_rect.centery = 0.02 * self.WINDOW_HEIGHT + text_chat_rect.h // 2
             self.list_choice = [1,2,3,4,5]
@@ -1616,7 +1673,6 @@ def game_frame():
                                     self.user_player.win_absolute = True
                                 self.user_player.pos_tele = self.user_player.rect.topleft
                                 self.user_player.tele_frame = 5
-                            
                             elif type == 5:
                                 self.user_player.pos_tele = self.player.rect.topleft
                                 self.user_player.tele_frame = 5
@@ -1958,10 +2014,9 @@ def hide_password(state, entry):
     state.config(command=lambda: show_password(state, entry))
 
 def invalid_letter(letter):
-    return not(
-            (letter >= '0' and letter <= '9')
-            or (letter >= 'A' and letter <= 'Z')
-            or (letter >= 'a' and letter <= 'z'))
+    return not((letter >= '0' and letter <= '9')
+               or (letter >= 'A' and letter <= 'Z')
+               or (letter >= 'a' and letter <= 'z'))
 
 def pos_user(email):
     global userdata
@@ -1970,10 +2025,10 @@ def pos_user(email):
     r = len(userdata) - 1
     mid = int((r + l) / 2)
     
-    if (r < 0): 
+    if r < 0:
         return -1
 
-    while (True):
+    while True:
         if l + 1 >= r:
             if int(userdata[r][1]) <= email:
                 return r + 1
@@ -1987,15 +2042,15 @@ def pos_user(email):
         mid = int((r + l) / 2)
 
 def get_hash(s, capital = 0):
-    hashS = 0
+    hash_s = 0
     for i in range(0, len(s)):
-        tmp = hashS
+        tmp = hash_s
         if s[i] <= 'Z':
-            hashS = (tmp + (ord(s[i]) + capital) * pow[i]) % MOD
+            hash_s = (tmp + (ord(s[i]) + capital) * pow[i]) % MOD
         else:
-            hashS = (tmp + ord(s[i]) * pow[i]) % MOD
+            hash_s = (tmp + ord(s[i]) * pow[i]) % MOD
         
-    return hashS
+    return hash_s
 
 # -------------------- SIGN UP --------------------
 
@@ -2131,7 +2186,7 @@ class signup():
         if self.username[0] < 'A':
             self.begin_username_error.place(x=773, y=196)
             return None
-        if (len(userdata) > 0):
+        if len(userdata) > 0:
             for i in userdata:
                 if i[0] == self.username:
                     self.username_existed_error.place(x=773, y=196)
@@ -2154,20 +2209,20 @@ class signup():
                 self.invalid_email_error.place(x=773, y=296)
                 return None
             if self.email[i] == '@':
-                if (len(self.email) - i > 255):
+                if len(self.email) - i > 255:
                     self.invalid_email_error.place(x=773, y=296)
                     return None
                 check = True
                 exist_letter = False
                 i += 1
-                if (invalid_letter(self.email[i])):
+                if invalid_letter(self.email[i]):
                     self.invalid_email_error.place(x=773, y=296)
                     return None
                 i += 1
                 while i < len(self.email):
-                    if (invalid_letter(self.email[i]) 
+                    if invalid_letter(self.email[i]) \
                         and not ((self.email[i] == '-' or self.email[i] == '.') 
-                                 and self.email[i] != self.email[i - 1] and i + 1 < len(self.email))):
+                                 and self.email[i] != self.email[i - 1] and i + 1 < len(self.email)):
                         self.invalid_email_error.place(x=773, y=296)
                         return None
                     exist_letter |= self.email[i] >= 'A'
@@ -2176,7 +2231,7 @@ class signup():
                 while i >= 3 and self.email[i] != '.' and self.email[i] != '@': 
                     i -= 1
                     exist_letter |= (self.email[i] >= 'A')
-                if (i <= 2 or len(self.email) - i - 1 < 2 or self.email[i] != '.' or not exist_letter):
+                if i <= 2 or len(self.email) - i - 1 < 2 or self.email[i] != '.' or not exist_letter:
                     self.invalid_email_error.place(x=773, y=296)
                     return None
                 break
@@ -2185,7 +2240,7 @@ class signup():
             return None
         self.email_code = get_hash(self.email_entry.get(), 32)
         self.pos = pos_user(self.email_code)
-        if (self.pos > 0 and self.email_code == int(userdata[self.pos - 1][1])):
+        if self.pos > 0 and self.email_code == int(userdata[self.pos - 1][1]):
             self.email_existed_error.place(x=773, y=296)
             return None
 
@@ -2316,7 +2371,7 @@ class login():
         
         self.pos = -1
         for i in range(0, len(userdata)):
-            if (userdata[i][0] == self.username_entry.get()):
+            if userdata[i][0] == self.username_entry.get():
                 self.pos = i
                 break
         if self.pos < 0:
@@ -2436,7 +2491,7 @@ class reset_password:
         self.match_repassword_error = tk.Label(self.frame, image=match_repassword, bd=1, bg="#aadcfe")
     
     def process(self):
-        global userdata, log_in, info
+        global userdata, log_in
 
         self.required_username_error.place_forget()
         self.find_username_error.place_forget()
@@ -2467,7 +2522,7 @@ class reset_password:
             self.required_email_error.place(x=773, y=296)
             return None
         self.email_code = get_hash(self.email_entry.get(), 32)
-        if (int(userdata[self.pos][1]) != self.email_code):
+        if int(userdata[self.pos][1]) != self.email_code:
             self.find_email_error.place(x=773, y=296)
             return None
 
