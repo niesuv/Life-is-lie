@@ -600,7 +600,7 @@ def game_frame():
 			dis = self.WINDOW_WIDTH // 32 + 1
 			for i , item in enumerate(self.history):
 				temp = []
-				temp.append(Text(f"{abs(int(item[2]))}", self.font32 ,int(.13 * self.WINDOW_WIDTH)
+				temp.append(Text(f"{abs( int( int(item[2]) / int(item[1] - 1) ) )}", self.font32 ,int(.13 * self.WINDOW_WIDTH)
 				                 ,int( (0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis ), center=True,hover=False))
 				
 				temp.append(Text(f"{type_map[int(item[1])-2]}", self.font32, int(.4 * self.WINDOW_WIDTH)
@@ -1543,7 +1543,6 @@ def game_frame():
 			
 			# Main loop
 			while racing:
-				print(self.time)
 				# if all player get the race, show victory
 				if len(self.rank) == 5:
 					self.show_victory()
