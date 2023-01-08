@@ -599,7 +599,7 @@ def game_frame():
             dis = self.WINDOW_WIDTH // 32 + 1
             for i , item in enumerate(self.history):
                 temp = []
-                temp.append(Text(f"{abs( int( int(item[2]) / int(item[1] - 1) ) )}", self.font32 ,int(.13 * self.WINDOW_WIDTH), 
+                temp.append(Text(f"{abs( int( int(item[2]) / (int(item[1]) - 1) ) )}", self.font32 ,int(.13 * self.WINDOW_WIDTH),
                                  int( (0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis ), center=True,hover=False))
                 
                 temp.append(Text(f"{type_map[int(item[1])-2]}", self.font32, int(.4 * self.WINDOW_WIDTH), 
@@ -612,7 +612,7 @@ def game_frame():
                                      int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True, color=GREEN, 
                                      hover=False))
                 else:
-                    temp.append(Text(f"{item[2]}", self.font32, int(.86 * self.WINDOW_WIDTH), 
+                    temp.append(Text(f"{ int (int(item[2]) / ( int(item[1]) - 1)) }", self.font32, int(.86 * self.WINDOW_WIDTH),
                                      int((0.33 + i * 0.06) * self.WINDOW_HEIGHT + i * dis), center=True,
                                      color=RED, 
                                      hover=False))
@@ -659,7 +659,7 @@ def game_frame():
             scale = image.get_width() / image.get_height()
             image = pygame.transform.scale(image , (self.WINDOW_HEIGHT * .12 * scale, self.WINDOW_HEIGHT * .12))
             left_button = Button(int(0.26 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84), image, 1)
-            right_button = Button(int(0.73 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84 , image, 1)
+            right_button = Button(int(0.73 * self.WINDOW_WIDTH), int(self.WINDOW_HEIGHT * .84) , image, 1)
             
             # image mini game
             image = pygame.image.load("./asset/image/minigame1.png")
@@ -1171,10 +1171,7 @@ def game_frame():
                                         self.race()
                 
                 # Check error
-                error = (len(user_text) >= 11) 
-                         or (not user_text.isdigit()) 
-                         or (int(user_text) <= 0) 
-                         or (int(user_text) > self.gold)
+                error = (len(user_text) >= 11) or (not user_text.isdigit()) or (int(user_text) <= 0) or (int(user_text) > self.gold)
                 self.show_back_ground()
                 
                 # Draw character
