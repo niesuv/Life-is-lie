@@ -1,13 +1,11 @@
 import sys
-
 import pygame, random
 
-
 def sub_game(width, height, gold, music):
-	
 	GREEN = (30, 189, 38)
 	ORANGE = (217, 101, 7)
 	YELLOW = (209, 206, 23)
+	
 	
 	class Button():
 		def __init__(self, x, y, image, scale):
@@ -37,6 +35,7 @@ def sub_game(width, height, gold, music):
 	WINDOW_WIDTH = width
 	WINDOW_HEIGHT = height
 	display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+	
 	# FPS AND Clock
 	clock = pygame.time.Clock()
 	FPS = 60
@@ -191,25 +190,23 @@ def sub_game(width, height, gold, music):
 			gold_text = font.render(f'GOLD: {return_gold + point}', True, YELLOW)
 			gold_text_rect = gold_text.get_rect()
 			gold_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), int(WINDOW_HEIGHT * 0.75))
+			
 			# point text
 			bet_text = font.render(f'+ {point}', True, GREEN)
 			return_gold += point
 			
 			bet_text_rect = bet_text.get_rect()
-			bet_text_rect.topleft = (int(WINDOW_WIDTH * 0.03)
-			                         , int(WINDOW_HEIGHT * 0.75) + gold_text_rect.height)
-			# Back btn
+			bet_text_rect.topleft = (int(WINDOW_WIDTH * 0.03), int(WINDOW_HEIGHT * 0.75) + gold_text_rect.height)
+			
+			# Back button
 			image = pygame.image.load("./asset/button/button_back.png")
 			scale = image.get_height() / image.get_width()
-			
-			image = pygame.transform.scale(image, (int(0.15 * WINDOW_WIDTH)
-			                                       , int(scale * 0.15 * WINDOW_WIDTH)))
-			
-			back_button = Button(int((1 - 0.03 - 0.075) * WINDOW_WIDTH)
-			                     , int(0.88 * WINDOW_HEIGHT), image, 1)
+			image = pygame.transform.scale(image, (int(0.15 * WINDOW_WIDTH), int(scale * 0.15 * WINDOW_WIDTH)))
+			back_button = Button(int((1 - 0.03 - 0.075) * WINDOW_WIDTH), int(0.88 * WINDOW_HEIGHT), image, 1)
 
 			if music:
 				game_over_sound.play()
+			
 			while pause:
 				display_surface.blit(game_over_text, game_over_text_rect)
 				display_surface.blit(gold_text, gold_text_rect)
@@ -243,6 +240,7 @@ def sub_game(width, height, gold, music):
 							boost_sound.stop()
 							pygame.mixer.music.stop()
 							return return_gold
+		
 		# Load the dog
 		display_surface.blit(dog, dog_rect)
 		display_surface.blit(meat, meat_rect)
@@ -250,5 +248,3 @@ def sub_game(width, height, gold, music):
 		# UPDATE DISPLAY AND SET CLOCK
 		pygame.display.update()
 		clock.tick(FPS)
-
-	
