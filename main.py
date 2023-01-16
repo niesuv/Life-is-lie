@@ -2550,7 +2550,7 @@ class reset_password:
             return None
         
         # reset password
-        userdata[self.pos - 1][2] = self.password_code
+        userdata[self.pos][2] = self.password_code
         trans_str()
 
         delete_errors(self.required_username_error, self.find_username_error,
